@@ -1,189 +1,82 @@
 // components/NorthIndianKundali.tsx
 "use client";
 
-import { PlanetaryPosition } from "@/libs/jyotish-engine";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
 
-interface Props {
-  lagnaRashiIndex: number; // 1-12
-  planets: PlanetaryPosition[];
+interface NorthIndianChartProps {
+  title: string;
+  subtitle?: string;
+  lagnaSignIndex: number;
+  chartData: Record<number, string[]>;
 }
 
-// Center coordinates for houses in North Indian Grid (Size: 400x400)
-const HOUSE_COORDINATES: Record<
-  number,
-  { rashi: { x: number; y: number }; planets: { x: number; y: number } }
-> = {
-  1: { rashi: { x: 200, y: 110 }, planets: { x: 200, y: 140 } }, // Top Diamond (Lagna)
-  2: { rashi: { x: 100, y: 50 }, planets: { x: 100, y: 80 } }, // Top Left
-  3: { rashi: { x: 50, y: 100 }, planets: { x: 50, y: 130 } }, // Upper Left
-  4: { rashi: { x: 110, y: 200 }, planets: { x: 140, y: 200 } }, // Left Diamond
-  5: { rashi: { x: 50, y: 300 }, planets: { x: 50, y: 330 } }, // Lower Left
-  6: { rashi: { x: 100, y: 350 }, planets: { x: 100, y: 380 } }, // Bottom Left
-  7: { rashi: { x: 200, y: 290 }, planets: { x: 200, y: 260 } }, // Bottom Diamond
-  8: { rashi: { x: 300, y: 350 }, planets: { x: 300, y: 380 } }, // Bottom Right
-  9: { rashi: { x: 350, y: 300 }, planets: { x: 350, y: 330 } }, // Lower Right
-  10: { rashi: { x: 290, y: 200 }, planets: { x: 260, y: 200 } }, // Right Diamond
-  11: { rashi: { x: 350, y: 100 }, planets: { x: 350, y: 130 } }, // Upper Right
-  12: { rashi: { x: 300, y: 50 }, planets: { x: 300, y: 80 } }, // Top Right
-};
+const HOUSE_POSITIONS = [
+  { house: 1, signPos: { x: 200, y: 180 }, planetPos: { x: 200, y: 100 } },
+  { house: 2, signPos: { x: 135, y: 25 }, planetPos: { x: 100, y: 60 } },
+  { house: 3, signPos: { x: 25, y: 135 }, planetPos: { x: 60, y: 100 } },
+  { house: 4, signPos: { x: 180, y: 200 }, planetPos: { x: 100, y: 200 } },
+  { house: 5, signPos: { x: 25, y: 265 }, planetPos: { x: 60, y: 300 } },
+  { house: 6, signPos: { x: 135, y: 375 }, planetPos: { x: 100, y: 340 } },
+  { house: 7, signPos: { x: 200, y: 220 }, planetPos: { x: 200, y: 300 } },
+  { house: 8, signPos: { x: 265, y: 375 }, planetPos: { x: 300, y: 340 } },
+  { house: 9, signPos: { x: 375, y: 265 }, planetPos: { x: 340, y: 300 } },
+  { house: 10, signPos: { x: 220, y: 200 }, planetPos: { x: 300, y: 200 } },
+  { house: 11, signPos: { x: 375, y: 135 }, planetPos: { x: 340, y: 100 } },
+  { house: 12, signPos: { x: 265, y: 25 }, planetPos: { x: 300, y: 60 } },
+];
 
 export default function NorthIndianKundali({
-  lagnaRashiIndex,
-  planets,
-}: Props) {
-  const S = 400;
-
-  const getRashiNum = (houseNum: number) => {
-    return ((lagnaRashiIndex + houseNum - 2) % 12) + 1;
-  };
-
-  const getHousePlanets = (houseNum: number) => {
-    return planets
-      .filter(
-        (planet) =>
-          ((planet.signIndex - (lagnaRashiIndex - 1) + 12) % 12) + 1 ===
-          houseNum,
-      )
-      .map(
-        (planet) =>
-          ({
-            Sun: "Su",
-            Moon: "Mo",
-            Mars: "Ma",
-            Mercury: "Me",
-            Jupiter: "Ju",
-            Venus: "Ve",
-            Saturn: "Sa",
-            Rahu: "Ra",
-            Ketu: "Ke",
-          })[planet.name] ?? planet.name,
-      )
-      .join(" ");
-  };
-
+  title,
+  subtitle,
+  lagnaSignIndex,
+  chartData,
+}: NorthIndianChartProps) {
   return (
-    <Card className="border-primary/10 bg-card shadow-xl shadow-primary/5">
-      <CardHeader className="gap-2 border-b border-border/70 pb-5">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
-          North Indian chart
-        </p>
-        <CardTitle className="font-serif text-2xl text-primary">
-          जन्म कुण्डली <span className="text-muted-foreground">/ लग्न</span>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Rashi numbers by house · planetary abbreviations inside
-        </p>
-      </CardHeader>
-      <CardContent className="flex items-center justify-center p-5 pt-6 md:p-8">
-        <svg
-          width={S}
-          height={S}
-          viewBox={`0 0 ${S} ${S}`}
-          className="h-auto w-full max-w-[28rem] rounded-2xl border border-primary/20 bg-[#f4ead7] shadow-inner"
-        >
-          {/* Outer Square */}
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="mb-3 text-center">
+        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        )}
+      </div>
+
+      <div className="mx-auto aspect-square w-full max-w-105">
+        <svg viewBox="0 0 400 400" className="h-full w-full select-none">
           <rect
-            x="0"
-            y="0"
-            width={S}
-            height={S}
+            x="2"
+            y="2"
+            width="396"
+            height="396"
             fill="none"
-            stroke="#78350f"
-            strokeWidth="2.5"
+            stroke="currentColor"
+            strokeWidth="3"
+            rx="4"
           />
+          <line x1="2" y1="2" x2="398" y2="398" stroke="currentColor" strokeWidth="1.5" />
+          <line x1="398" y1="2" x2="2" y2="398" stroke="currentColor" strokeWidth="1.5" />
+          <polygon points="200,2 398,200 200,398 2,200" fill="none" stroke="currentColor" strokeWidth="1.5" />
 
-          {/* Diagonals */}
-          <line
-            x1="0"
-            y1="0"
-            x2={S}
-            y2={S}
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-          <line
-            x1={S}
-            y1="0"
-            x2="0"
-            y2={S}
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-
-          {/* Inner Diamond */}
-          <line
-            x1={S / 2}
-            y1="0"
-            x2="0"
-            y2={S / 2}
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-          <line
-            x1="0"
-            y1={S / 2}
-            x2={S / 2}
-            y2={S}
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-          <line
-            x1={S / 2}
-            y1={S}
-            x2={S}
-            y2={S / 2}
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-          <line
-            x1={S}
-            y1={S / 2}
-            x2={S / 2}
-            y2="0"
-            stroke="#78350f"
-            strokeWidth="1.5"
-          />
-
-          {/* Render Rashi Numbers & Planets in 12 Houses */}
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((houseNum) => {
-            const coords = HOUSE_COORDINATES[houseNum];
-            const planetsStr = getHousePlanets(houseNum);
+          {HOUSE_POSITIONS.map(({ house, signPos, planetPos }) => {
+            const signNumber = ((lagnaSignIndex + house - 1) % 12) + 1;
+            const planetsInHouse = chartData[house] ?? [];
 
             return (
-              <g key={houseNum}>
-                {/* Rashi Number */}
-                <text
-                  x={coords.rashi.x}
-                  y={coords.rashi.y}
-                  fill="#9a3412"
-                  fontSize="13"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                >
-                  {getRashiNum(houseNum)}
+              <g key={house}>
+                <text x={signPos.x} y={signPos.y} textAnchor="middle" dominantBaseline="central" className="fill-primary font-bold text-[13px]">
+                  {signNumber}
                 </text>
-
-                {/* Planet Codes */}
-                {planetsStr && (
-                  <text
-                    x={coords.planets.x}
-                    y={coords.planets.y}
-                    fill="#1e3a8a"
-                    fontSize="12"
-                    fontWeight="600"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    {planetsStr}
-                  </text>
-                )}
+                <text x={planetPos.x} y={planetPos.y} textAnchor="middle" dominantBaseline="central" className="fill-foreground font-semibold text-[13px]">
+                  {planetsInHouse.map((planetName, index) => (
+                    <tspan key={`${planetName}-${index}`} x={planetPos.x} dy={index === 0 ? `-${(planetsInHouse.length - 1) * 7}` : "15"}>
+                      {planetName}
+                    </tspan>
+                  ))}
+                </text>
               </g>
             );
           })}
         </svg>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,112 +1,544 @@
 // lib/jyotish-engine.ts
 import SwissEph from "swisseph-wasm";
 
-export interface PlanetaryPosition {
+// --- DATA STRUCTURE INTERFACES ---
+
+export interface AvakahadaChakra {
+  rashi: string;
+  rashiNe: string;
+  rashiLord: string;
+  rashiLordNe: string;
+  nakshatra: string;
+  nakshatraNe: string;
+  nakshatraLord: string;
+  nakshatraLordNe: string;
+  pada: number;
+  gana: "Deva" | "Manushya" | "Rakshasa";
+  ganaNe: string;
+  yoni: string;
+  yoniNe: string;
+  nadi: "Adi" | "Madhya" | "Antya";
+  nadiNe: string;
+  varna: "Brahmin" | "Kshatriya" | "Vaishya" | "Shudra";
+  varnaNe: string;
+  paya: "Gold" | "Silver" | "Copper" | "Iron";
+  payaNe: string;
+}
+
+export interface DetailedPlanet {
+  id: number;
   name: string;
   nameNe: string;
-  longitude: number; // 0° to 360° Sidereal
-  signIndex: number; // 0 = Mesha, 1 = Vrishabha, ...
+  longitude: number;
+  dms: string; // Deg° Min' Sec"
+  signIndex: number;
   signName: string;
   signNameNe: string;
-  degreeInSign: number;
+  signLord: string;
+  signLordNe: string;
+  house: number; // 1 to 12 in D1
   nakshatraIndex: number;
   nakshatraName: string;
   nakshatraNameNe: string;
   pada: number;
   isRetrograde: boolean;
+  isCombust: boolean; // Asthangat
+  d9SignIndex: number; // Sign position in Navamsha (D9)
+  d9SignNameNe: string;
 }
 
-export interface KundaliResult {
-  lagnaSignIndex: number;
-  lagnaSignName: string;
-  lagnaSignNameNe: string;
-  lagnaDegree: number;
-  planets: PlanetaryPosition[];
-  ayanamshaDeg: number;
-  panchang: {
-    janmaRashi: string;
-    tithiNameNe: string;
-    tithiNumber: number;
-    nakshatraNe: string;
+export interface DashaPeriod {
+  planet: string;
+  planetNe: string;
+  startDate: string;
+  endDate: string;
+  durationYears: number;
+}
+
+export interface PanchangAtBirth {
+  tithiNameNe: string;
+  tithiNumber: number;
+  pakshaNe: string;
+  nakshatraNe: string;
+  yogaNameNe: string;
+  karanaNameNe: string;
+  dayOfWeekNe: string;
+}
+
+export interface DoshaAnalysis {
+  isManglik: boolean;
+  manglikDetailsNe: string;
+  hasKalsarpa: boolean;
+  kalsarpaDetailsNe: string;
+}
+
+export interface CompleteBirthChartReport {
+  birthDetails: {
+    gregorianDate: string;
+    latitude: number;
+    longitude: number;
+    ayanamshaDeg: string;
   };
+  lagna: {
+    signIndex: number;
+    signNameNe: string;
+    dms: string;
+    d9SignIndex: number;
+    d9SignNameNe: string;
+  };
+  avakahada: AvakahadaChakra;
+  panchang: PanchangAtBirth;
+  planets: DetailedPlanet[];
+  dashaTimeline: DashaPeriod[];
+  doshas: DoshaAnalysis;
+  d1Chart: Record<number, string[]>; // House 1..12 -> Planet names
+  d9Chart: Record<number, string[]>; // House 1..12 in Navamsha
 }
 
-const RASHI_NAMES = [
-  { en: "Aries", ne: "मेष" },
-  { en: "Taurus", ne: "वृष" },
-  { en: "Gemini", ne: "मिथुन" },
-  { en: "Cancer", ne: "कर्कट" },
-  { en: "Leo", ne: "सिंह" },
-  { en: "Virgo", ne: "कन्या" },
-  { en: "Libra", ne: "तुला" },
-  { en: "Scorpio", ne: "वृश्चिक" },
-  { en: "Sagittarius", ne: "धनु" },
-  { en: "Capricorn", ne: "मकर" },
-  { en: "Aquarius", ne: "कुम्भ" },
-  { en: "Pisces", ne: "मीन" },
+// --- LOOKUP TABLES & ASTROLOGICAL CONSTANTS ---
+
+const RASHIS = [
+  { en: "Aries", ne: "मेष", lord: "Mars", lordNe: "मङ्गल", varna: "Kshatriya" },
+  { en: "Taurus", ne: "वृष", lord: "Venus", lordNe: "शुक्र", varna: "Vaishya" },
+  {
+    en: "Gemini",
+    ne: "मिथुन",
+    lord: "Mercury",
+    lordNe: "बुध",
+    varna: "Shudra",
+  },
+  {
+    en: "Cancer",
+    ne: "कर्कट",
+    lord: "Moon",
+    lordNe: "चन्द्र",
+    varna: "Brahmin",
+  },
+  { en: "Leo", ne: "सिंह", lord: "Sun", lordNe: "सूर्य", varna: "Kshatriya" },
+  {
+    en: "Virgo",
+    ne: "कन्या",
+    lord: "Mercury",
+    lordNe: "बुध",
+    varna: "Vaishya",
+  },
+  { en: "Libra", ne: "तुला", lord: "Venus", lordNe: "शुक्र", varna: "Shudra" },
+  {
+    en: "Scorpio",
+    ne: "वृश्चिक",
+    lord: "Mars",
+    lordNe: "मङ्गल",
+    varna: "Brahmin",
+  },
+  {
+    en: "Sagittarius",
+    ne: "धनु",
+    lord: "Jupiter",
+    lordNe: "गुरु",
+    varna: "Kshatriya",
+  },
+  {
+    en: "Capricorn",
+    ne: "मकर",
+    lord: "Saturn",
+    lordNe: "शनि",
+    varna: "Vaishya",
+  },
+  {
+    en: "Aquarius",
+    ne: "कुम्भ",
+    lord: "Saturn",
+    lordNe: "शनि",
+    varna: "Shudra",
+  },
+  {
+    en: "Pisces",
+    ne: "मीन",
+    lord: "Jupiter",
+    lordNe: "गुरु",
+    varna: "Brahmin",
+  },
 ];
 
-const NAKSHATRA_NAMES = [
-  { en: "Ashwini", ne: "अश्विनी" },
-  { en: "Bharani", ne: "भरणी" },
-  { en: "Krittika", ne: "कृत्तिका" },
-  { en: "Rohini", ne: "रोहिणी" },
-  { en: "Mrigashira", ne: "मृगशिरा" },
-  { en: "Ardra", ne: "आर्द्रा" },
-  { en: "Punarvasu", ne: "पुनर्वसु" },
-  { en: "Pushya", ne: "पुष्य" },
-  { en: "Ashlesha", ne: "अश्लेषा" },
-  { en: "Magha", ne: "मघा" },
-  { en: "Purva Phalguni", ne: "पूर्वाफाल्गुनी" },
-  { en: "Uttara Phalguni", ne: "उत्तराफाल्गुनी" },
-  { en: "Hasta", ne: "हस्त" },
-  { en: "Chitra", ne: "चित्रा" },
-  { en: "Swati", ne: "स्वाती" },
-  { en: "Vishakha", ne: "विशाखा" },
-  { en: "Anuradha", ne: "अनुराधा" },
-  { en: "Jyeshtha", ne: "ज्येष्ठा" },
-  { en: "Moola", ne: "मूल" },
-  { en: "Purva Ashadha", ne: "पूर्वाषाढा" },
-  { en: "Uttara Ashadha", ne: "उत्तराषाढा" },
-  { en: "Shravana", ne: "श्रवण" },
-  { en: "Dhanishta", ne: "धनिष्ठा" },
-  { en: "Shatabhisha", ne: "शतभिषा" },
-  { en: "Purva Bhadrapada", ne: "पूर्वभाद्रपदा" },
-  { en: "Uttara Bhadrapada", ne: "उत्तरभाद्रपदा" },
-  { en: "Revati", ne: "रेवती" },
+const NAKSHATRAS = [
+  {
+    en: "Ashwini",
+    ne: "अश्विनी",
+    lord: "Ketu",
+    lordNe: "केतु",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Horse",
+    yoniNe: "अश्व",
+  },
+  {
+    en: "Bharani",
+    ne: "भरणी",
+    lord: "Venus",
+    lordNe: "शुक्र",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Elephant",
+    yoniNe: "गज",
+  },
+  {
+    en: "Krittika",
+    ne: "कृत्तिका",
+    lord: "Sun",
+    lordNe: "सूर्य",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Sheep",
+    yoniNe: "मेष",
+  },
+  {
+    en: "Rohini",
+    ne: "रोहिणी",
+    lord: "Moon",
+    lordNe: "चन्द्र",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Serpent",
+    yoniNe: "सर्प",
+  },
+  {
+    en: "Mrigashira",
+    ne: "मृगशिरा",
+    lord: "Mars",
+    lordNe: "मङ्गल",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Serpent",
+    yoniNe: "सर्प",
+  },
+  {
+    en: "Ardra",
+    ne: "आर्द्रा",
+    lord: "Rahu",
+    lordNe: "राहु",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Dog",
+    yoniNe: "श्वान",
+  },
+  {
+    en: "Punarvasu",
+    ne: "पुनर्वसु",
+    lord: "Jupiter",
+    lordNe: "गुरु",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Cat",
+    yoniNe: "मार्जार",
+  },
+  {
+    en: "Pushya",
+    ne: "पुष्य",
+    lord: "Saturn",
+    lordNe: "शनि",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Goat",
+    yoniNe: "अजा",
+  },
+  {
+    en: "Ashlesha",
+    ne: "अश्लेषा",
+    lord: "Mercury",
+    lordNe: "बुध",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Cat",
+    yoniNe: "मार्जार",
+  },
+  {
+    en: "Magha",
+    ne: "मघा",
+    lord: "Ketu",
+    lordNe: "केतु",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Rat",
+    yoniNe: "मूषक",
+  },
+  {
+    en: "Purva Phalguni",
+    ne: "पूर्वाफाल्गुनी",
+    lord: "Venus",
+    lordNe: "शुक्र",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Rat",
+    yoniNe: "मूषक",
+  },
+  {
+    en: "Uttara Phalguni",
+    ne: "उत्तराफाल्गुनी",
+    lord: "Sun",
+    lordNe: "सूर्य",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Cow",
+    yoniNe: "गौ",
+  },
+  {
+    en: "Hasta",
+    ne: "हस्त",
+    lord: "Moon",
+    lordNe: "चन्द्र",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Buffalo",
+    yoniNe: "महिष",
+  },
+  {
+    en: "Chitra",
+    ne: "चित्रा",
+    lord: "Mars",
+    lordNe: "मङ्गल",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Tiger",
+    yoniNe: "व्याघ्र",
+  },
+  {
+    en: "Swati",
+    ne: "स्वाती",
+    lord: "Rahu",
+    lordNe: "राहु",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Buffalo",
+    yoniNe: "महिष",
+  },
+  {
+    en: "Vishakha",
+    ne: "विशाखा",
+    lord: "Jupiter",
+    lordNe: "गुरु",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Tiger",
+    yoniNe: "व्याघ्र",
+  },
+  {
+    en: "Anuradha",
+    ne: "अनुराधा",
+    lord: "Saturn",
+    lordNe: "शनि",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Deer",
+    yoniNe: "मृग",
+  },
+  {
+    en: "Jyeshtha",
+    ne: "ज्येष्ठा",
+    lord: "Mercury",
+    lordNe: "बुध",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Deer",
+    yoniNe: "मृग",
+  },
+  {
+    en: "Moola",
+    ne: "मूल",
+    lord: "Ketu",
+    lordNe: "केतु",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Dog",
+    yoniNe: "श्वान",
+  },
+  {
+    en: "Purva Ashadha",
+    ne: "पूर्वाषाढा",
+    lord: "Venus",
+    lordNe: "शुक्र",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Monkey",
+    yoniNe: "वानर",
+  },
+  {
+    en: "Uttara Ashadha",
+    ne: "उत्तराषाढा",
+    lord: "Sun",
+    lordNe: "सूर्य",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Mongoose",
+    yoniNe: "नकुल",
+  },
+  {
+    en: "Shravana",
+    ne: "श्रवण",
+    lord: "Moon",
+    lordNe: "चन्द्र",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Monkey",
+    yoniNe: "वानर",
+  },
+  {
+    en: "Dhanishta",
+    ne: "धनिष्ठा",
+    lord: "Mars",
+    lordNe: "मङ्गल",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Lion",
+    yoniNe: "सिंह",
+  },
+  {
+    en: "Shatabhisha",
+    ne: "शतभिषा",
+    lord: "Rahu",
+    lordNe: "राहु",
+    gana: "Rakshasa",
+    ganaNe: "राक्षस",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Horse",
+    yoniNe: "अश्व",
+  },
+  {
+    en: "Purva Bhadrapada",
+    ne: "पूर्वभाद्रपदा",
+    lord: "Jupiter",
+    lordNe: "गुरु",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Adi",
+    nadiNe: "आदि",
+    yoni: "Lion",
+    yoniNe: "सिंह",
+  },
+  {
+    en: "Uttara Bhadrapada",
+    ne: "उत्तरभाद्रपदा",
+    lord: "Saturn",
+    lordNe: "शनि",
+    gana: "Manushya",
+    ganaNe: "मनुष्य",
+    nadi: "Madhya",
+    nadiNe: "मध्य",
+    yoni: "Cow",
+    yoniNe: "गौ",
+  },
+  {
+    en: "Revati",
+    ne: "रेवती",
+    lord: "Mercury",
+    lordNe: "बुध",
+    gana: "Deva",
+    ganaNe: "देव",
+    nadi: "Antya",
+    nadiNe: "अन्त्य",
+    yoni: "Elephant",
+    yoniNe: "गज",
+  },
 ];
 
-const TITHI_NAMES_NE = [
-  "प्रतिपदा",
-  "द्वितीया",
-  "तृतीया",
-  "चतुर्थी",
-  "पञ्चमी",
-  "षष्ठी",
-  "सप्तमी",
-  "अष्टमी",
-  "नवमी",
-  "दशमी",
-  "एकादशी",
-  "द्वादशी",
-  "त्रयोदशी",
-  "चतुर्दशी",
-  "पूर्णिमा / औंसी",
+const DASHA_PERIODS_YEARS: Record<string, number> = {
+  Ketu: 7,
+  Venus: 20,
+  Sun: 6,
+  Moon: 10,
+  Mars: 7,
+  Rahu: 18,
+  Jupiter: 16,
+  Saturn: 19,
+  Mercury: 17,
+};
+
+const DASHA_ORDER = [
+  "Ketu",
+  "Venus",
+  "Sun",
+  "Moon",
+  "Mars",
+  "Rahu",
+  "Jupiter",
+  "Saturn",
+  "Mercury",
 ];
 
-/**
- * Calculates complete Sidereal Kundali using Swiss Ephemeris
- */
-export async function calculateKundali(
+// --- HELPER MATHEMATICAL FUNCTIONS ---
+
+function toDMS(deg: number): string {
+  const d = Math.floor(deg);
+  const mFull = (deg - d) * 60;
+  const m = Math.floor(mFull);
+  const s = Math.round((mFull - m) * 60);
+  return `${d}° ${m}' ${s}"`;
+}
+
+// Calculate D9 Navamsha Sign Index (0..11)
+function calculateD9Sign(longitude: number): number {
+  const navamshaArc = 360 / 108; // 3° 20' = 3.333333°
+  const totalNavamshaIndex = Math.floor((longitude % 360) / navamshaArc);
+  return totalNavamshaIndex % 12;
+}
+
+// --- MAIN GENERATOR FUNCTION ---
+
+export async function generateFullBirthChart(
   gregorianDate: Date,
   latitude: number,
   longitude: number,
-): Promise<KundaliResult> {
+): Promise<CompleteBirthChartReport> {
   const swe = new SwissEph();
   await swe.initSwissEph();
 
   try {
-    // 1. Convert Date & Time to UTC Decimal Hours
     const year = gregorianDate.getUTCFullYear();
     const month = gregorianDate.getUTCMonth() + 1;
     const day = gregorianDate.getUTCDate();
@@ -115,108 +547,295 @@ export async function calculateKundali(
       gregorianDate.getUTCMinutes() / 60 +
       gregorianDate.getUTCSeconds() / 3600;
 
-    // 2. Compute Julian Day Number
     const jd = swe.julday(year, month, day, utHours);
-
-    // 3. Configure Sidereal Mode to Lahiri (NCS Ayanamsha)
     swe.set_sid_mode(swe.SE_SIDM_LAHIRI, 0, 0);
     const ayanamsha = swe.get_ayanamsa_ut(jd);
-
-    // Flag for Sidereal positions with planetary speed
     const flags = swe.SEFLG_SIDEREAL | swe.SEFLG_SPEED;
 
-    // 4. Planet Map Definitions
-    const targetPlanets = [
-      { id: swe.SE_SUN, en: "Sun", ne: "सूर्य" },
-      { id: swe.SE_MOON, en: "Moon", ne: "चन्द्र" },
-      { id: swe.SE_MARS, en: "Mars", ne: "मङ्गल" },
-      { id: swe.SE_MERCURY, en: "Mercury", ne: "बुध" },
-      { id: swe.SE_JUPITER, en: "Jupiter", ne: "गुरु" },
-      { id: swe.SE_VENUS, en: "Venus", ne: "शुक्र" },
-      { id: swe.SE_SATURN, en: "Saturn", ne: "शनि" },
-      { id: swe.SE_MEAN_NODE, en: "Rahu", ne: "राहु" },
+    // 1. Compute Ascendant (Lagna)
+    const houses = swe.houses_ex(jd, flags, latitude, longitude, "E");
+    const lagnaSidereal = (houses.ascmc[0] + 360) % 360;
+    const lagnaSignIndex = Math.floor(lagnaSidereal / 30);
+    const lagnaD9SignIndex = calculateD9Sign(lagnaSidereal);
+
+    // 2. Compute Planets
+    const planetList = [
+      { id: swe.SE_SUN, en: "Sun", ne: "सूर्य", combustThreshold: 0 },
+      { id: swe.SE_MOON, en: "Moon", ne: "चन्द्र", combustThreshold: 12 },
+      { id: swe.SE_MARS, en: "Mars", ne: "मङ्गल", combustThreshold: 17 },
+      { id: swe.SE_MERCURY, en: "Mercury", ne: "बुध", combustThreshold: 14 },
+      { id: swe.SE_JUPITER, en: "Jupiter", ne: "गुरु", combustThreshold: 11 },
+      { id: swe.SE_VENUS, en: "Venus", ne: "शुक्र", combustThreshold: 10 },
+      { id: swe.SE_SATURN, en: "Saturn", ne: "शनि", combustThreshold: 15 },
+      { id: swe.SE_MEAN_NODE, en: "Rahu", ne: "राहु", combustThreshold: 0 },
     ];
 
-    const planets: PlanetaryPosition[] = [];
+    const planets: DetailedPlanet[] = [];
+    let sunLong = 0;
 
-    for (const p of targetPlanets) {
+    for (const p of planetList) {
       const pos = swe.calc_ut(jd, p.id, flags);
       const long = (pos[0] + 360) % 360;
       const speed = pos[3];
 
+      if (p.en === "Sun") sunLong = long;
+
       const signIndex = Math.floor(long / 30);
-      const degreeInSign = long % 30;
       const nakshatraIndex = Math.floor(long / (360 / 27));
       const pada = Math.floor((long % (360 / 27)) / (360 / 108)) + 1;
+      const house = ((signIndex - lagnaSignIndex + 12) % 12) + 1;
 
       planets.push({
+        id: p.id,
         name: p.en,
         nameNe: p.ne,
         longitude: long,
+        dms: toDMS(long % 30),
         signIndex,
-        signName: RASHI_NAMES[signIndex].en,
-        signNameNe: RASHI_NAMES[signIndex].ne,
-        degreeInSign,
+        signName: RASHIS[signIndex].en,
+        signNameNe: RASHIS[signIndex].ne,
+        signLord: RASHIS[signIndex].lord,
+        signLordNe: RASHIS[signIndex].lordNe,
+        house,
         nakshatraIndex,
-        nakshatraName: NAKSHATRA_NAMES[nakshatraIndex].en,
-        nakshatraNameNe: NAKSHATRA_NAMES[nakshatraIndex].ne,
+        nakshatraName: NAKSHATRAS[nakshatraIndex].en,
+        nakshatraNameNe: NAKSHATRAS[nakshatraIndex].ne,
         pada,
         isRetrograde: speed < 0,
+        isCombust: false, // Calculated after loop
+        d9SignIndex: calculateD9Sign(long),
+        d9SignNameNe: RASHIS[calculateD9Sign(long)].ne,
       });
     }
 
-    // Add Ketu (180° opposite Rahu)
+    // Add Ketu
     const rahu = planets.find((p) => p.name === "Rahu")!;
     const ketuLong = (rahu.longitude + 180) % 360;
     const ketuSignIdx = Math.floor(ketuLong / 30);
     const ketuNakIdx = Math.floor(ketuLong / (360 / 27));
 
     planets.push({
+      id: 99,
       name: "Ketu",
       nameNe: "केतु",
       longitude: ketuLong,
+      dms: toDMS(ketuLong % 30),
       signIndex: ketuSignIdx,
-      signName: RASHI_NAMES[ketuSignIdx].en,
-      signNameNe: RASHI_NAMES[ketuSignIdx].ne,
-      degreeInSign: ketuLong % 30,
+      signName: RASHIS[ketuSignIdx].en,
+      signNameNe: RASHIS[ketuSignIdx].ne,
+      signLord: RASHIS[ketuSignIdx].lord,
+      signLordNe: RASHIS[ketuSignIdx].lordNe,
+      house: ((ketuSignIdx - lagnaSignIndex + 12) % 12) + 1,
       nakshatraIndex: ketuNakIdx,
-      nakshatraName: NAKSHATRA_NAMES[ketuNakIdx].en,
-      nakshatraNameNe: NAKSHATRA_NAMES[ketuNakIdx].ne,
+      nakshatraName: NAKSHATRAS[ketuNakIdx].en,
+      nakshatraNameNe: NAKSHATRAS[ketuNakIdx].ne,
       pada: Math.floor((ketuLong % (360 / 27)) / (360 / 108)) + 1,
       isRetrograde: rahu.isRetrograde,
+      isCombust: false,
+      d9SignIndex: calculateD9Sign(ketuLong),
+      d9SignNameNe: RASHIS[calculateD9Sign(ketuLong)].ne,
     });
 
-    // 5. Compute Lagna (Ascendant) using Houses Calculation
-    // 'E' = Equal House System, widely used in Vedic Jyotish
-    const houses = swe.houses_ex(jd, flags, latitude, longitude, "E");
-    const ascendantTropical = houses.ascmc[0];
-    const ascendantSidereal = (ascendantTropical + 360) % 360;
-    const lagnaSignIndex = Math.floor(ascendantSidereal / 30);
+    // Check Combustion relative to Sun distance
+    planets.forEach((p) => {
+      if (p.name !== "Sun" && p.name !== "Rahu" && p.name !== "Ketu") {
+        const dist = Math.min(
+          (p.longitude - sunLong + 360) % 360,
+          (sunLong - p.longitude + 360) % 360,
+        );
+        const cfg = planetList.find((item) => item.en === p.name);
+        if (cfg && dist <= cfg.combustThreshold) {
+          p.isCombust = true;
+        }
+      }
+    });
 
-    // 6. Panchang Metrics: Tithi Calculation
-    const sun = planets.find((p) => p.name === "Sun")!;
+    // 3. Build D1 and D9 Chart House Arrays
+    const d1Chart: Record<number, string[]> = {};
+    const d9Chart: Record<number, string[]> = {};
+    for (let h = 1; h <= 12; h++) {
+      d1Chart[h] = [];
+      d9Chart[h] = [];
+    }
+
+    planets.forEach((p) => {
+      d1Chart[p.house].push(p.nameNe);
+      const d9House = ((p.d9SignIndex - lagnaD9SignIndex + 12) % 12) + 1;
+      d9Chart[d9House].push(p.nameNe);
+    });
+
+    // 4. Avakahada Chakra (from Moon position)
     const moon = planets.find((p) => p.name === "Moon")!;
-    const moonSunDiff = (moon.longitude - sun.longitude + 360) % 360;
-    const tithiNumber = Math.floor(moonSunDiff / 12) + 1;
-    const tithiIndex = (tithiNumber - 1) % 15;
-    const paksha = tithiNumber <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+    const moonNak = NAKSHATRAS[moon.nakshatraIndex];
+    const moonRashi = RASHIS[moon.signIndex];
+
+    const avakahada: AvakahadaChakra = {
+      rashi: moonRashi.en,
+      rashiNe: moonRashi.ne,
+      rashiLord: moonRashi.lord,
+      rashiLordNe: moonRashi.lordNe,
+      nakshatra: moonNak.en,
+      nakshatraNe: moonNak.ne,
+      nakshatraLord: moonNak.lord,
+      nakshatraLordNe: moonNak.lordNe,
+      pada: moon.pada,
+      gana: moonNak.gana as AvakahadaChakra["gana"],
+      ganaNe: moonNak.ganaNe,
+      yoni: moonNak.yoni,
+      yoniNe: moonNak.yoniNe,
+      nadi: moonNak.nadi as AvakahadaChakra["nadi"],
+      nadiNe: moonNak.nadiNe,
+      varna: moonRashi.varna as AvakahadaChakra["varna"],
+      varnaNe:
+        moonRashi.varna === "Brahmin"
+          ? "ब्राह्मण"
+          : moonRashi.varna === "Kshatriya"
+            ? "क्षत्रिय"
+            : moonRashi.varna === "Vaishya"
+              ? "वैश्य"
+              : "शूद्र",
+      paya:
+        moon.house === 1 || moon.house === 6 || moon.house === 11
+          ? "Gold"
+          : moon.house === 2 || moon.house === 5 || moon.house === 9
+            ? "Silver"
+            : "Copper",
+      payaNe:
+        moon.house === 1 || moon.house === 6 || moon.house === 11
+          ? "सुनको पाया"
+          : moon.house === 2 || moon.house === 5 || moon.house === 9
+            ? "चाँदीको पाया"
+            : "तामाको पाया",
+    };
+
+    // 5. Vimshottari Dasha Calculation
+    const nakArc = 360 / 27;
+    const moonProgressInNak = moon.longitude % nakArc;
+    const fractionElapsed = moonProgressInNak / nakArc;
+    const balanceRemainingFraction = 1 - fractionElapsed;
+
+    const birthDashaLord = moonNak.lord;
+    const totalBirthDashaYears = DASHA_PERIODS_YEARS[birthDashaLord];
+    const remainingYears = totalBirthDashaYears * balanceRemainingFraction;
+
+    const dashaTimeline: DashaPeriod[] = [];
+    let currentDate = new Date(gregorianDate);
+
+    // Initial Balance Period
+    const dashaEndDate = new Date(currentDate);
+    dashaEndDate.setFullYear(
+      dashaEndDate.getFullYear() + Math.floor(remainingYears),
+    );
+    dashaEndDate.setMonth(
+      dashaEndDate.getMonth() + Math.floor((remainingYears % 1) * 12),
+    );
+
+    dashaTimeline.push({
+      planet: birthDashaLord,
+      planetNe:
+        NAKSHATRAS.find((n) => n.lord === birthDashaLord)?.lordNe ||
+        birthDashaLord,
+      startDate: currentDate.toISOString().split("T")[0],
+      endDate: dashaEndDate.toISOString().split("T")[0],
+      durationYears: Number(remainingYears.toFixed(1)),
+    });
+
+    currentDate = new Date(dashaEndDate);
+    let lordIdx =
+      (DASHA_ORDER.indexOf(birthDashaLord) + 1) % DASHA_ORDER.length;
+
+    // Next 6 Dashas (covering ~100 years)
+    for (let i = 0; i < 6; i++) {
+      const lord = DASHA_ORDER[lordIdx];
+      const duration = DASHA_PERIODS_YEARS[lord];
+      const end = new Date(currentDate);
+      end.setFullYear(end.getFullYear() + duration);
+
+      dashaTimeline.push({
+        planet: lord,
+        planetNe: NAKSHATRAS.find((n) => n.lord === lord)?.lordNe || lord,
+        startDate: currentDate.toISOString().split("T")[0],
+        endDate: end.toISOString().split("T")[0],
+        durationYears: duration,
+      });
+
+      currentDate = new Date(end);
+      lordIdx = (lordIdx + 1) % DASHA_ORDER.length;
+    }
+
+    // 6. Dosha Checks (Manglik & Kaal Sarp)
+    const mars = planets.find((p) => p.name === "Mars")!;
+    const isManglik = [1, 4, 7, 8, 12].includes(mars.house);
+
+    // Kaal Sarp Check (All planets between Rahu & Ketu longitudes)
+    const rahuLong = rahu.longitude;
+    const ketuLong_ = planets.find((p) => p.name === "Ketu")!.longitude;
+    const otherPlanets = planets.filter(
+      (p) => p.name !== "Rahu" && p.name !== "Ketu",
+    );
+
+    const allBetween = otherPlanets.every((p) => {
+      const l = p.longitude;
+      return rahuLong < ketuLong_
+        ? l >= rahuLong && l <= ketuLong_
+        : l >= rahuLong || l <= ketuLong_;
+    });
 
     return {
-      lagnaSignIndex,
-      lagnaSignName: RASHI_NAMES[lagnaSignIndex].en,
-      lagnaSignNameNe: RASHI_NAMES[lagnaSignIndex].ne,
-      lagnaDegree: ascendantSidereal % 30,
-      planets,
-      ayanamshaDeg: ayanamsha,
-      panchang: {
-        janmaRashi: moon.signName,
-        tithiNameNe: `${paksha} - ${TITHI_NAMES_NE[tithiIndex]}`,
-        tithiNumber,
-        nakshatraNe: moon.nakshatraNameNe,
+      birthDetails: {
+        gregorianDate: gregorianDate.toISOString(),
+        latitude,
+        longitude,
+        ayanamshaDeg: toDMS(ayanamsha),
       },
+      lagna: {
+        signIndex: lagnaSignIndex,
+        signNameNe: RASHIS[lagnaSignIndex].ne,
+        dms: toDMS(lagnaSidereal % 30),
+        d9SignIndex: lagnaD9SignIndex,
+        d9SignNameNe: RASHIS[lagnaD9SignIndex].ne,
+      },
+      avakahada,
+      panchang: {
+        tithiNameNe: `तिथि (${Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1})`,
+        tithiNumber:
+          Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1,
+        pakshaNe:
+          Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1 <= 15
+            ? "शुक्ल पक्ष"
+            : "कृष्ण पक्ष",
+        nakshatraNe: moonNak.ne,
+        yogaNameNe:
+          NAKSHATRAS[
+            Math.floor(((sunLong + moon.longitude) % 360) / (360 / 27))
+          ].ne,
+        karanaNameNe: "करण विशेष",
+        dayOfWeekNe: [
+          "आइतबार",
+          "सोमबार",
+          "मङ्गलबार",
+          "बुधबार",
+          "बिहिबार",
+          "शुक्रबार",
+          "शनिबार",
+        ][gregorianDate.getUTCDay()],
+      },
+      planets,
+      dashaTimeline,
+      doshas: {
+        isManglik,
+        manglikDetailsNe: isManglik
+          ? `मङ्गल ग्रह ${mars.house} औं भावमा रहेकाले मङ्गल दोष देखिन्छ।`
+          : "मङ्गल दोष छैन।",
+        hasKalsarpa: allBetween,
+        kalsarpaDetailsNe: allBetween
+          ? "सबै ग्रहहरू राहु र केतुको बीचमा रहेकाले कालसर्प योग देखिन्छ।"
+          : "कालसर्प योग छैन।",
+      },
+      d1Chart,
+      d9Chart,
     };
   } finally {
-    // Always release WASM memory resources
     swe.close();
   }
 }

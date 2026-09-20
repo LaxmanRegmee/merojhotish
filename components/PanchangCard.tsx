@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Compass, Moon, Sparkles, Sun } from "lucide-react";
 
 interface PanchangProps {
-  lagna: { rashiName: string; degree: number };
+  lagna: { rashiName: string; degree: string };
   panchang: { janmaRashi: string; nakshatra: string; tithi: string };
 }
 
@@ -37,7 +37,7 @@ export default function PanchangCard({ lagna, panchang }: PanchangProps) {
             <Compass aria-hidden="true" /> लग्न (Lagna)
           </span>
           <span className="mt-3 block font-serif text-xl font-semibold">
-            {lagna.rashiName} ({lagna.degree}°)
+            {lagna.rashiName} ({lagna.degree})
           </span>
         </div>
 

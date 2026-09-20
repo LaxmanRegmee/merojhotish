@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ArrowUpRight, Orbit, Sparkles } from "lucide-react";
 import { generateKundaliAction } from "@/app/action";
 import KundaliForm from "@/components/KundaliForm";
-import NorthIndianKundali from "@/components/NorthIndianKundali";
+import KundaliChartsView from "@/components/KundaliChartsView";
 import PanchangCard from "@/components/PanchangCard";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -14,12 +14,25 @@ type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 export default function Home() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
-    const result = await generateKundaliAction(formData);
-    setChartData(result);
-    setLoading(false);
+    setError(null);
+
+    try {
+      const result = await generateKundaliAction(formData);
+      setChartData(result);
+    } catch (submissionError) {
+      setChartData(null);
+      setError(
+        submissionError instanceof Error
+          ? submissionError.message
+          : "कुण्डली बनाउन सकिएन।",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -75,22 +88,24 @@ export default function Home() {
         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
           <div className="md:col-span-5 lg:col-span-4">
             <KundaliForm onSubmit={handleSubmit} loading={loading} />
+            {error && (
+              <p className="mt-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-6 md:col-span-7 lg:col-span-8">
             {chartData ? (
               <>
-                <NorthIndianKundali
-                  lagnaRashiIndex={chartData.lagnaSignIndex + 1}
-                  planets={chartData.planets}
-                />
+                <KundaliChartsView report={chartData} />
                 <PanchangCard
                   lagna={{
-                    rashiName: chartData.lagnaSignName,
-                    degree: chartData.lagnaDegree,
+                    rashiName: chartData.lagna.signNameNe,
+                    degree: chartData.lagna.dms,
                   }}
                   panchang={{
-                    janmaRashi: chartData.panchang.janmaRashi,
+                    janmaRashi: chartData.avakahada.rashiNe,
                     nakshatra: chartData.panchang.nakshatraNe,
                     tithi: chartData.panchang.tithiNameNe,
                   }}
