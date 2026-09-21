@@ -5,14 +5,26 @@ import { bsToAd } from "@/libs/bs-converter";
 import { generateFullBirthChart } from "@/libs/jyotish-engine";
 
 export async function generateKundaliAction(formData: FormData) {
-  const bsYear = parseInt(formData.get("bsYear") as string, 10);
-  const bsMonth = parseInt(formData.get("bsMonth") as string, 10);
-  const bsDay = parseInt(formData.get("bsDay") as string, 10);
-  const birthTime = formData.get("birthTime") as string; // "08:30"
-  const cityCoords = (formData.get("city") as string).split(",");
+  const bsYear = Number(formData.get("bsYear"));
+  const bsMonth = Number(formData.get("bsMonth"));
+  const bsDay = Number(formData.get("bsDay"));
+  const birthTime = String(formData.get("birthTime") ?? "");
+  const city = String(formData.get("city") ?? "");
+  const cityCoords = city.split(",");
 
   const lat = parseFloat(cityCoords[0]);
   const lon = parseFloat(cityCoords[1]);
+
+  if (
+    !Number.isInteger(bsYear) ||
+    !Number.isInteger(bsMonth) ||
+    !Number.isInteger(bsDay) ||
+    !/^\d{2}:\d{2}$/.test(birthTime) ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon)
+  ) {
+    throw new Error("Please enter a valid birth date, time, and birthplace.");
+  }
 
   // Convert BS to AD Date
   const adDate = bsToAd(bsYear, bsMonth, bsDay);
