@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { CaretRight, Clock } from "@phosphor-icons/react";
+import {  Clock } from "@phosphor-icons/react";
 import { MAJOR_NEPALI_CITIES } from "@/libs/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +33,7 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
 
   return (
     <form action={onSubmit} className="flex flex-col gap-6">
-      <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border-border shadow-sm">
+      <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border border-border">
         <CardHeader className="flex h-[85px] w-full flex-col gap-2 px-4 py-[17px]">
           <CardTitle className="w-full text-sm font-semibold">
             Birth Details
@@ -125,9 +125,9 @@ function TimePicker({
           <Clock aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[131px] p-2">
-        <div className="flex h-[196px] w-[115px]">
-          <div className="flex max-h-[196px] flex-col gap-0 overflow-y-auto [scrollbar-width:thin]">
+      <PopoverContent align="end" className="w-32.75 p-2">
+        <div className="flex h-49 w-28.75">
+          <div className="flex max-h-49 flex-col gap-0 overflow-y-auto scrollbar-thin">
             {hours.map((hour) => (
               <button
                 key={hour}
@@ -141,7 +141,7 @@ function TimePicker({
             ))}
           </div>
 
-          <div className="ml-2 flex max-h-[196px] flex-col gap-0 overflow-y-auto [scrollbar-width:thin]">
+          <div className="ml-2 flex max-h-49 flex-col gap-0 overflow-y-auto scrollbar-thin">
             {minutes.map((minute) => (
               <button
                 key={minute}

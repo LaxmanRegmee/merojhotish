@@ -70,7 +70,7 @@ export default function Home() {
       ) : (
         <>
           <section >
-            <div className="mx-auto flex h-114 max-w-318 flex-col items-center border-x border-border border -b px-5 pt-25">
+            <div className="mx-auto flex h-114 max-w-318 flex-col items-center border-x border-border border-b px-5 pt-25">
               <div className="flex max-w-2xl flex-col items-center text-center">
                 <div className="mb-5 inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-secondary-foreground">
                   <CakeIcon weight="fill" size={12} aria-hidden="true" />
