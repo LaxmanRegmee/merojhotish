@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import {  Clock } from "@phosphor-icons/react";
+import { CircleNotch, Clock } from "@phosphor-icons/react";
 import { MAJOR_NEPALI_CITIES } from "@/libs/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +84,18 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
             disabled={loading || !birthDate.day || !city}
             className="h-8 w-full rounded-lg bg-primary text-xs font-medium text-primary-foreground"
           >
-            {loading ? "Creating chart..." : "Continue"}
+            {loading ? (
+              <>
+                <CircleNotch
+                  className="animate-spin"
+                  size={14}
+                  aria-hidden="true"
+                />
+                Creating chart...
+              </>
+            ) : (
+              "Continue"
+            )}
           </Button>
         </div>
       </Card>
