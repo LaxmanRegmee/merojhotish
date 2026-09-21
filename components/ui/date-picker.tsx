@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDots, CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 import { NEPALI_MONTHS } from "@/libs/bs-converter";
 import { cn } from "@/libs/utils";
@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 
 interface NepaliDatePickerProps {
   year: number;
@@ -39,6 +38,19 @@ export function NepaliDatePicker({
     onChange({ year, month, day, ...partial });
   }
 
+  function changeMonth(direction: 1 | -1) {
+    const nextMonth = month + direction;
+    if (nextMonth < 1) {
+      updateDate({ year: year - 1, month: 12, day: 1 });
+      return;
+    }
+    if (nextMonth > 12) {
+      updateDate({ year: year + 1, month: 1, day: 1 });
+      return;
+    }
+    updateDate({ month: nextMonth, day: 1 });
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -46,49 +58,96 @@ export function NepaliDatePicker({
           type="button"
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "ui-picker-trigger h-8 w-full justify-between rounded-lg px-2.5 text-left text-sm font-normal",
             !year && "text-muted-foreground",
           )}
         >
-          <CalendarDays className="h-4 w-4" />
-          {year
-            ? `${year} ${NEPALI_MONTHS[month - 1]} ${day}`
-            : "मिति छान्नुहोस्"}
+          <span className="truncate">
+            {year && day
+              ? `${year} ${NEPALI_MONTHS[month - 1]} ${day}`
+              : "Select a date"}
+          </span>
+          <CalendarDots className="size-4 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(20rem,calc(100vw-2rem))]">
-        <div className="grid grid-cols-[1fr_1.4fr] gap-2">
-          <Input
-            aria-label="B.S. year"
-            type="number"
-            min={1}
-            value={year}
-            onChange={(event) =>
-              updateDate({ year: Number(event.target.value) })
-            }
-          />
-          <Select
-            value={String(month)}
-            onValueChange={(value) => updateDate({ month: Number(value) })}
+      <PopoverContent
+        align="start"
+        className="w-53 rounded-lg border border-border bg-white p-2 shadow-[0_4px_10px_rgba(0,0,0,0.14)]"
+      >
+        <div className="mb-2 flex h-8 items-center justify-between">
+          <button
+            type="button"
+            aria-label="Previous month"
+            onClick={() => changeMonth(-1)}
+            className="ui-picker-option flex size-7 items-center justify-center rounded-md"
           >
-            <SelectTrigger aria-label="B.S. month">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {NEPALI_MONTHS.map((monthName, index) => (
-                <SelectItem key={monthName} value={String(index + 1)}>
-                  {monthName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <CaretLeft aria-hidden="true" className="size-4" />
+          </button>
+
+          <div className="flex items-center gap-1 text-sm font-normal">
+            <Select
+              value={String(month)}
+              onValueChange={(value) =>
+                updateDate({ month: Number(value), day: 1 })
+              }
+            >
+              <SelectTrigger
+                aria-label="B.S. month"
+                className="h-7 w-auto gap-0 border-0 bg-transparent px-1 text-sm shadow-none"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {NEPALI_MONTHS.map((monthName, index) => (
+                  <SelectItem key={monthName} value={String(index + 1)}>
+                    {monthName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={String(year)}
+              onValueChange={(value) =>
+                updateDate({ year: Number(value), day: 1 })
+              }
+            >
+              <SelectTrigger
+                aria-label="B.S. year"
+                className="h-7 w-[58px] border-0 bg-transparent px-1 text-sm shadow-none"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 101 }, (_, index) => 2000 + index).map(
+                  (yearOption) => (
+                    <SelectItem key={yearOption} value={String(yearOption)}>
+                      {yearOption}
+                    </SelectItem>
+                  ),
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Next month"
+            onClick={() => changeMonth(1)}
+            className="ui-picker-option flex size-7 items-center justify-center rounded-md"
+          >
+            <CaretRight aria-hidden="true" className="size-4" />
+          </button>
         </div>
 
-        <div
-          className="mt-4 grid grid-cols-8 gap-1"
-          role="grid"
-          aria-label="B.S. day"
-        >
+        <div className="grid grid-cols-7 text-center text-xs text-muted-foreground">
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((weekday) => (
+            <span key={weekday} className="h-7 leading-7">
+              {weekday}
+            </span>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7" role="grid" aria-label="B.S. day">
           {Array.from({ length: 32 }, (_, index) => index + 1).map(
             (dayNumber) => (
               <button
@@ -101,10 +160,9 @@ export function NepaliDatePicker({
                   setOpen(false);
                 }}
                 className={cn(
-                  "h-8 rounded-md text-sm hover:bg-accent hover:text-accent-foreground",
-                  day === dayNumber &&
-                    "bg-primary text-primary-foreground hover:bg-primary/90",
+                  "ui-picker-option mx-auto flex size-7 items-center justify-center rounded-full text-sm",
                 )}
+                data-selected={day === dayNumber}
               >
                 {dayNumber}
               </button>

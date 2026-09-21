@@ -2,13 +2,17 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
+import { CaretRight, Clock } from "@phosphor-icons/react";
 import { MAJOR_NEPALI_CITIES } from "@/libs/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NepaliDatePicker } from "@/components/ui/date-picker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,56 +27,36 @@ interface FormProps {
 }
 
 export default function KundaliForm({ onSubmit, loading }: FormProps) {
-  const [birthDate, setBirthDate] = useState({ year: 2055, month: 4, day: 15 });
+  const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 0 });
+  const [birthTime, setBirthTime] = useState("21:23");
+  const [city, setCity] = useState("");
 
   return (
     <form action={onSubmit} className="flex flex-col gap-6">
-      <Card className="border-primary/10 bg-card shadow-xl shadow-primary/5">
-        <CardHeader className="gap-2 border-b border-border/70 pb-5">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            Start here
-          </p>
-          <CardTitle className="font-serif text-2xl">जन्म विवरण</CardTitle>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Enter the moment and place you arrived in the world.
+      <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border-border shadow-sm">
+        <CardHeader className="flex h-[85px] w-full flex-col gap-2 px-4 py-[17px]">
+          <CardTitle className="w-full text-sm font-semibold">
+            Birth Details
+          </CardTitle>
+          <p className="text-sm leading-4 text-muted-foreground">
+            Enter your birth details below to find out your birth chart.
           </p>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-5 pt-6">
-          <div className="flex flex-col gap-2">
-            <Label className="flex items-center gap-2" htmlFor="bsYear">
-              <CalendarDays aria-hidden="true" /> वि.सं. जन्म मिति
-            </Label>
+        <CardContent className="flex flex-col gap-3 px-4 py-3">
+          <div className="flex h-[60px] flex-col gap-2">
+            <Label htmlFor="bsYear">Date of birth</Label>
             <NepaliDatePicker {...birthDate} onChange={setBirthDate} />
             <input type="hidden" name="bsYear" value={birthDate.year} />
             <input type="hidden" name="bsMonth" value={birthDate.month} />
             <input type="hidden" name="bsDay" value={birthDate.day} />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label className="flex items-center gap-2" htmlFor="birthTime">
-              <Clock3 aria-hidden="true" /> जन्म समय{" "}
-              <span className="text-muted-foreground">NPT</span>
-            </Label>
-            <Input
-              id="birthTime"
-              type="time"
-              name="birthTime"
-              defaultValue="08:30"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label className="flex items-center gap-2" htmlFor="city">
-              <MapPin aria-hidden="true" /> जन्म स्थान
-            </Label>
-            <Select
-              name="city"
-              defaultValue={`${MAJOR_NEPALI_CITIES[0].lat},${MAJOR_NEPALI_CITIES[0].lon}`}
-            >
-              <SelectTrigger id="city">
-                <SelectValue placeholder="स्थान छान्नुहोस्" />
+          <div className="flex h-[88px] flex-col gap-2">
+            <Label htmlFor="city">Where were you born?</Label>
+            <Select name="city" value={city} onValueChange={setCity}>
+              <SelectTrigger id="city" className="h-8 rounded-lg px-2.5">
+                <SelectValue placeholder="Choose a district" />
               </SelectTrigger>
               <SelectContent>
                 {MAJOR_NEPALI_CITIES.map((city) => (
@@ -82,18 +66,110 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Select a district that you were born in
+            </p>
           </div>
 
+          <div className="flex h-[60px] flex-col gap-2">
+            <Label htmlFor="birthTime">Remember the time?</Label>
+            <TimePicker value={birthTime} onChange={setBirthTime} />
+            <input type="hidden" name="birthTime" value={birthTime} />
+          </div>
+        </CardContent>
+
+        <div className="flex h-16 flex-col justify-center gap-3 rounded-b-xl border-t border-t-border bg-muted/60 px-4 py-4">
           <Button
             type="submit"
-            disabled={loading}
-            className="h-12 w-full bg-accent text-accent-foreground shadow-lg shadow-accent/20 hover:bg-accent/90"
+            disabled={loading || !birthDate.day || !city}
+            className="h-8 w-full rounded-lg bg-primary text-xs font-medium text-primary-foreground"
           >
-            {loading ? "कुण्डली बनाउँदैछ..." : "कुण्डली तयार पार्नुहोस्"}
-            {!loading && <ArrowRight aria-hidden="true" />}
+            {loading ? "Creating chart..." : "Continue"}
           </Button>
-        </CardContent>
+        </div>
       </Card>
     </form>
+  );
+}
+
+function TimePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [hourValue, minuteValue] = value.split(":").map(Number);
+  const meridiem = hourValue >= 12 ? "PM" : "AM";
+  const displayHour = hourValue % 12 || 12;
+  const hours = Array.from({ length: 12 }, (_, index) => index + 1);
+  const minutes = Array.from({ length: 60 }, (_, index) => index);
+
+  function updateTime(hour: number, minute: number, nextMeridiem = meridiem) {
+    const normalizedHour = nextMeridiem === "PM" ? (hour % 12) + 12 : hour % 12;
+    onChange(
+      `${String(normalizedHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+    );
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          id="birthTime"
+          type="button"
+          variant="outline"
+          className="ui-picker-trigger h-8 w-full justify-between rounded-lg px-2.5 text-left text-sm font-normal"
+        >
+          {displayHour}:{String(minuteValue).padStart(2, "0")} {meridiem}
+          <Clock aria-hidden="true" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[131px] p-2">
+        <div className="flex h-[196px] w-[115px]">
+          <div className="flex max-h-[196px] flex-col gap-0 overflow-y-auto [scrollbar-width:thin]">
+            {hours.map((hour) => (
+              <button
+                key={hour}
+                type="button"
+                onClick={() => updateTime(hour, minuteValue)}
+                className="ui-picker-option flex size-7 items-center justify-center rounded-full text-sm"
+                data-selected={hour === displayHour}
+              >
+                {String(hour).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+
+          <div className="ml-2 flex max-h-[196px] flex-col gap-0 overflow-y-auto [scrollbar-width:thin]">
+            {minutes.map((minute) => (
+              <button
+                key={minute}
+                type="button"
+                onClick={() => updateTime(displayHour, minute)}
+                className="ui-picker-option flex size-7 items-center justify-center rounded-full text-sm"
+                data-selected={minute === minuteValue}
+              >
+                {String(minute).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+
+          <div className="ml-[23px] flex flex-col justify-center gap-0">
+            {(["AM", "PM"] as const).map((period) => (
+              <button
+                key={period}
+                type="button"
+                onClick={() => updateTime(displayHour, minuteValue, period)}
+                className="ui-picker-option flex size-7 items-center justify-center rounded-full text-sm"
+                data-selected={period === meridiem}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

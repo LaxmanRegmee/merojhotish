@@ -11,7 +11,7 @@ interface PanchangProps {
 
 export default function PanchangCard({ lagna, panchang }: PanchangProps) {
   return (
-    <Card className="border-primary/10 bg-primary text-primary-foreground shadow-xl shadow-primary/10">
+    <Card className="border-border bg-primary text-primary-foreground shadow-xl shadow-primary/10">
       <CardHeader className="gap-2 pb-5">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
           The snapshot
@@ -22,7 +22,7 @@ export default function PanchangCard({ lagna, panchang }: PanchangProps) {
       </CardHeader>
 
       <CardContent className="grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/10 p-4">
+        <div className="rounded-lg border border-border bg-primary-foreground/10 p-4">
           <span className="flex items-center gap-2 text-xs text-primary-foreground/60">
             <Moon aria-hidden="true" />
             जन्म राशि (Janma Rashi)
@@ -32,7 +32,7 @@ export default function PanchangCard({ lagna, panchang }: PanchangProps) {
           </span>
         </div>
 
-        <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/10 p-4">
+        <div className="rounded-lg border border-border bg-primary-foreground/10 p-4">
           <span className="flex items-center gap-2 text-xs text-primary-foreground/60">
             <Compass aria-hidden="true" /> लग्न (Lagna)
           </span>
@@ -41,7 +41,7 @@ export default function PanchangCard({ lagna, panchang }: PanchangProps) {
           </span>
         </div>
 
-        <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/10 p-4">
+        <div className="rounded-lg border border-border bg-primary-foreground/10 p-4">
           <span className="flex items-center gap-2 text-xs text-primary-foreground/60">
             <Sparkles aria-hidden="true" />
             नक्षत्र (Nakshatra)
@@ -51,7 +51,7 @@ export default function PanchangCard({ lagna, panchang }: PanchangProps) {
           </span>
         </div>
 
-        <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/10 p-4">
+        <div className="rounded-lg border border-border bg-primary-foreground/10 p-4">
           <span className="flex items-center gap-2 text-xs text-primary-foreground/60">
             <Sun aria-hidden="true" /> तिथि (Tithi)
           </span>

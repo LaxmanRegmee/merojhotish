@@ -52,9 +52,28 @@ export default function NorthIndianKundali({
             strokeWidth="3"
             rx="4"
           />
-          <line x1="2" y1="2" x2="398" y2="398" stroke="currentColor" strokeWidth="1.5" />
-          <line x1="398" y1="2" x2="2" y2="398" stroke="currentColor" strokeWidth="1.5" />
-          <polygon points="200,2 398,200 200,398 2,200" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <line
+            x1="2"
+            y1="2"
+            x2="398"
+            y2="398"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <line
+            x1="398"
+            y1="2"
+            x2="2"
+            y2="398"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <polygon
+            points="200,2 398,200 200,398 2,200"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
 
           {HOUSE_POSITIONS.map(({ house, signPos, planetPos }) => {
             const signNumber = ((lagnaSignIndex + house - 1) % 12) + 1;
@@ -62,12 +81,32 @@ export default function NorthIndianKundali({
 
             return (
               <g key={house}>
-                <text x={signPos.x} y={signPos.y} textAnchor="middle" dominantBaseline="central" className="fill-primary font-bold text-[13px]">
+                <text
+                  x={signPos.x}
+                  y={signPos.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-primary font-bold text-[13px]"
+                >
                   {signNumber}
                 </text>
-                <text x={planetPos.x} y={planetPos.y} textAnchor="middle" dominantBaseline="central" className="fill-foreground font-semibold text-[13px]">
+                <text
+                  x={planetPos.x}
+                  y={planetPos.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-foreground font-semibold text-[13px]"
+                >
                   {planetsInHouse.map((planetName, index) => (
-                    <tspan key={`${planetName}-${index}`} x={planetPos.x} dy={index === 0 ? `-${(planetsInHouse.length - 1) * 7}` : "15"}>
+                    <tspan
+                      key={`${planetName}-${index}`}
+                      x={planetPos.x}
+                      dy={
+                        index === 0
+                          ? `-${(planetsInHouse.length - 1) * 7}`
+                          : "15"
+                      }
+                    >
                       {planetName}
                     </tspan>
                   ))}
