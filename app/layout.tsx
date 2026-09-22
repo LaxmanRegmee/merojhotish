@@ -10,7 +10,7 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: "Jyotish | नेपाली कुण्डली",
+  title: "MeroJyotish",
   description: "Generate a sidereal Nepali birth chart.",
 };
 
