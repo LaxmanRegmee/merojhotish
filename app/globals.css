@@ -105,12 +105,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-noto-sans-devanagari);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-noto-sans-devanagari), sans-serif;
 }
 
 .report-enter {

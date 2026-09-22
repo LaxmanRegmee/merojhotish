@@ -20,13 +20,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { Language } from "@/components/LanguageSwitcher";
 
 interface FormProps {
   onSubmit: (formData: FormData) => void;
   loading: boolean;
+  language: Language;
 }
 
-export default function KundaliForm({ onSubmit, loading }: FormProps) {
+export default function KundaliForm({
+  onSubmit,
+  loading,
+  language,
+}: FormProps) {
+  const isNepali = language === "np";
   const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 0 });
   const [birthTime, setBirthTime] = useState("21:23");
   const [city, setCity] = useState("");
@@ -34,18 +41,22 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
   return (
     <form action={onSubmit} className="flex flex-col gap-6">
       <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border border-border">
-        <CardHeader className="flex h-[85px] w-full flex-col gap-2 px-4 py-[17px]">
-          <CardTitle className="w-full text-sm font-semibold">
-            Birth Details
+        <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
+          <CardTitle className="w-full text-sm leading-6 font-semibold">
+            {isNepali ? "जन्म विवरण" : "Birth Details"}
           </CardTitle>
-          <p className="text-sm leading-4 text-muted-foreground">
-            Enter your birth details below to find out your birth chart.
+          <p className="text-sm leading-5 text-muted-foreground">
+            {isNepali
+              ? "आफ्नो जन्म कुण्डली थाहा पाउन तल जन्म विवरण भर्नुहोस्।"
+              : "Enter your birth details below to find out your birth chart."}
           </p>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-3 px-4 py-3">
           <div className="flex h-[60px] flex-col gap-2">
-            <Label htmlFor="bsYear">Date of birth</Label>
+            <Label htmlFor="bsYear">
+              {isNepali ? "जन्म मिति" : "Date of birth"}
+            </Label>
             <NepaliDatePicker {...birthDate} onChange={setBirthDate} />
             <input type="hidden" name="bsYear" value={birthDate.year} />
             <input type="hidden" name="bsMonth" value={birthDate.month} />
@@ -53,10 +64,16 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
           </div>
 
           <div className="flex h-[88px] flex-col gap-2">
-            <Label htmlFor="city">Where were you born?</Label>
+            <Label htmlFor="city">
+              {isNepali ? "तपाईं कहाँ जन्मनुभयो?" : "Where were you born?"}
+            </Label>
             <Select name="city" value={city} onValueChange={setCity}>
               <SelectTrigger id="city" className="h-8 rounded-lg px-2.5">
-                <SelectValue placeholder="Choose a district" />
+                <SelectValue
+                  placeholder={
+                    isNepali ? "जिल्ला छान्नुहोस्" : "Choose a district"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {MAJOR_NEPALI_CITIES.map((city) => (
@@ -67,12 +84,16 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
               </SelectContent>
             </Select>
             <p className="text-xs leading-5 text-muted-foreground">
-              Select a district that you were born in
+              {isNepali
+                ? "तपाईं जन्मनुभएको जिल्ला छान्नुहोस्"
+                : "Select a district that you were born in"}
             </p>
           </div>
 
           <div className="flex h-[60px] flex-col gap-2">
-            <Label htmlFor="birthTime">Remember the time?</Label>
+            <Label htmlFor="birthTime">
+              {isNepali ? "जन्म समय सम्झनुहुन्छ?" : "Remember the time?"}
+            </Label>
             <TimePicker value={birthTime} onChange={setBirthTime} />
             <input type="hidden" name="birthTime" value={birthTime} />
           </div>
@@ -91,8 +112,10 @@ export default function KundaliForm({ onSubmit, loading }: FormProps) {
                   size={14}
                   aria-hidden="true"
                 />
-                Creating chart...
+                {isNepali ? "कुण्डली बन्दैछ..." : "Creating chart..."}
               </>
+            ) : isNepali ? (
+              "जारी राख्नुहोस्"
             ) : (
               "Continue"
             )}

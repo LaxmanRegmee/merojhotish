@@ -12,8 +12,8 @@ export default async function KundaliReportPage() {
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6">
-      <KundaliChartsView report={report} />
-      <FullChartDetails report={report} />
+      <KundaliChartsView report={report} language="en" />
+      <FullChartDetails report={report} language="en" />
     </main>
   );
 }
