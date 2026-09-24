@@ -44,6 +44,7 @@ export interface DetailedPlanet {
   isRetrograde: boolean;
   isCombust: boolean; // Asthangat
   d9SignIndex: number; // Sign position in Navamsha (D9)
+  d9SignName: string;
   d9SignNameNe: string;
 }
 
@@ -56,12 +57,18 @@ export interface DashaPeriod {
 }
 
 export interface PanchangAtBirth {
+  tithiName: string;
   tithiNameNe: string;
   tithiNumber: number;
+  paksha: string;
   pakshaNe: string;
+  nakshatra: string;
   nakshatraNe: string;
+  yogaName: string;
   yogaNameNe: string;
+  karanaName: string;
   karanaNameNe: string;
+  dayOfWeek: string;
   dayOfWeekNe: string;
 }
 
@@ -81,9 +88,11 @@ export interface CompleteBirthChartReport {
   };
   lagna: {
     signIndex: number;
+    signName: string;
     signNameNe: string;
     dms: string;
     d9SignIndex: number;
+    d9SignName: string;
     d9SignNameNe: string;
   };
   avakahada: AvakahadaChakra;
@@ -604,6 +613,7 @@ export async function generateFullBirthChart(
         isRetrograde: speed < 0,
         isCombust: false, // Calculated after loop
         d9SignIndex: calculateD9Sign(long),
+        d9SignName: RASHIS[calculateD9Sign(long)].en,
         d9SignNameNe: RASHIS[calculateD9Sign(long)].ne,
       });
     }
@@ -633,6 +643,7 @@ export async function generateFullBirthChart(
       isRetrograde: rahu.isRetrograde,
       isCombust: false,
       d9SignIndex: calculateD9Sign(ketuLong),
+      d9SignName: RASHIS[calculateD9Sign(ketuLong)].en,
       d9SignNameNe: RASHIS[calculateD9Sign(ketuLong)].ne,
     });
 
@@ -790,26 +801,48 @@ export async function generateFullBirthChart(
       },
       lagna: {
         signIndex: lagnaSignIndex,
+        signName: RASHIS[lagnaSignIndex].en,
         signNameNe: RASHIS[lagnaSignIndex].ne,
         dms: toDMS(lagnaSidereal % 30),
         d9SignIndex: lagnaD9SignIndex,
+        d9SignName: RASHIS[lagnaD9SignIndex].en,
         d9SignNameNe: RASHIS[lagnaD9SignIndex].ne,
       },
       avakahada,
       panchang: {
+        tithiName: `Tithi (${Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1})`,
         tithiNameNe: `तिथि (${Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1})`,
         tithiNumber:
           Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1,
+        paksha:
+          Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1 <= 15
+            ? "Shukla Paksha"
+            : "Krishna Paksha",
         pakshaNe:
           Math.floor(((moon.longitude - sunLong + 360) % 360) / 12) + 1 <= 15
             ? "शुक्ल पक्ष"
             : "कृष्ण पक्ष",
+        nakshatra: moonNak.en,
         nakshatraNe: moonNak.ne,
+        yogaName:
+          NAKSHATRAS[
+            Math.floor(((sunLong + moon.longitude) % 360) / (360 / 27))
+          ].en,
         yogaNameNe:
           NAKSHATRAS[
             Math.floor(((sunLong + moon.longitude) % 360) / (360 / 27))
           ].ne,
+        karanaName: "Karana special",
         karanaNameNe: "करण विशेष",
+        dayOfWeek: [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ][gregorianDate.getUTCDay()],
         dayOfWeekNe: [
           "आइतबार",
           "सोमबार",

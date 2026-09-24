@@ -27,11 +27,11 @@ export default function KundaliChartsView({ report, language }: Props) {
       ]),
     );
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+    <div className="grid h-auto w-full grid-cols-1 gap-4 bg-gray-100 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
       {/* D1 Rashi Kundali */}
       <NorthIndianChart
         title={isNepali ? "लग्न कुण्डली (D1)" : "Ascendant Chart (D1)"}
-        subtitle={`${isNepali ? "लग्न राशि" : "Ascendant sign"}: ${isNepali ? report.lagna.signNameNe : report.lagna.signNameNe}`}
+        subtitle={`${isNepali ? "लग्न राशि" : "Ascendant sign"}: ${isNepali ? report.lagna.signNameNe : report.lagna.signName}`}
         lagnaSignIndex={report.lagna.signIndex}
         chartData={chartLabels(report.d1Chart)}
       />
@@ -39,7 +39,7 @@ export default function KundaliChartsView({ report, language }: Props) {
       {/* D9 Navamsha Kundali */}
       <NorthIndianChart
         title={isNepali ? "नवांश कुण्डली (D9)" : "Navamsha Chart (D9)"}
-        subtitle={`${isNepali ? "नवांश लग्न" : "Navamsha ascendant"}: ${isNepali ? report.lagna.d9SignNameNe : report.lagna.d9SignNameNe}`}
+        subtitle={`${isNepali ? "नवांश लग्न" : "Navamsha ascendant"}: ${isNepali ? report.lagna.d9SignNameNe : report.lagna.d9SignName}`}
         lagnaSignIndex={report.lagna.d9SignIndex}
         chartData={chartLabels(report.d9Chart)}
       />

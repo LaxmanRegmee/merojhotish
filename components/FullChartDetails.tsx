@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AvakahadaChakra from "@/components/AvakahadaChakra";
 import type { CompleteBirthChartReport } from "@/libs/jyotish-engine";
 import type { Language } from "@/components/LanguageSwitcher";
 
@@ -13,14 +14,32 @@ export default function FullChartDetails({
 }: FullChartDetailsProps) {
   const isNepali = language === "np";
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isNepali ? "जन्म विवरण र पञ्चाङ्ग" : "Birth details and panchang"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="flex flex-col">
+      <Card
+        id="panchang"
+        className="rounded-none border-0 bg-transparent shadow-none hover:border-transparent"
+      >
+        <CardContent className="grid grid-cols-1 border-y border-border p-0 sm:grid-cols-2 sm:[&>*:nth-child(even)]:border-r-0 lg:grid-cols-3 lg:[&>*:nth-child(even)]:border-r lg:[&>*:nth-child(3n)]:border-r-0">
+          <Detail
+            label={isNepali ? "जन्म राशि" : "Birth sign"}
+            value={isNepali ? report.avakahada.rashiNe : report.avakahada.rashi}
+          />
+          <Detail
+            label={isNepali ? "नक्षत्र" : "Nakshatra"}
+            value={
+              isNepali ? report.panchang.nakshatraNe : report.panchang.nakshatra
+            }
+          />
+          <Detail
+            label={isNepali ? "लग्न" : "Ascendant"}
+            value={`${isNepali ? report.lagna.signNameNe : report.lagna.signName} (${report.lagna.dms})`}
+          />
+          <Detail
+            label={isNepali ? "तिथि" : "Tithi"}
+            value={
+              isNepali ? report.panchang.tithiNameNe : report.panchang.tithiName
+            }
+          />
           <Detail
             label={isNepali ? "जन्म मिति" : "Birth date"}
             value={report.birthDetails.gregorianDate}
@@ -30,111 +49,93 @@ export default function FullChartDetails({
             value={`${report.birthDetails.latitude}, ${report.birthDetails.longitude}`}
           />
           <Detail
-            label={isNepali ? "अयनांश" : "Ayanamsha"}
-            value={report.birthDetails.ayanamshaDeg}
-          />
-          <Detail
-            label={isNepali ? "वार" : "Day"}
-            value={report.panchang.dayOfWeekNe}
-          />
-          <Detail
-            label={isNepali ? "तिथि" : "Tithi"}
-            value={report.panchang.tithiNameNe}
-          />
-          <Detail
             label={isNepali ? "पक्ष" : "Paksha"}
-            value={report.panchang.pakshaNe}
+            value={isNepali ? report.panchang.pakshaNe : report.panchang.paksha}
           />
-          <Detail
-            label={isNepali ? "नक्षत्र" : "Nakshatra"}
-            value={report.panchang.nakshatraNe}
-          />
+
           <Detail
             label={isNepali ? "योग" : "Yoga"}
-            value={report.panchang.yogaNameNe}
+            value={
+              isNepali ? report.panchang.yogaNameNe : report.panchang.yogaName
+            }
           />
           <Detail
             label={isNepali ? "करण" : "Karana"}
-            value={report.panchang.karanaNameNe}
+            value={
+              isNepali
+                ? report.panchang.karanaNameNe
+                : report.panchang.karanaName
+            }
           />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{isNepali ? "अवकहडा चक्र" : "Avakahada chart"}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Detail
-            label={isNepali ? "जन्म राशि" : "Birth sign"}
-            value={`${isNepali ? report.avakahada.rashiNe : report.avakahada.rashi} (${isNepali ? report.avakahada.rashiLordNe : report.avakahada.rashiLord})`}
-          />
-          <Detail
-            label={isNepali ? "नक्षत्र" : "Nakshatra"}
-            value={`${isNepali ? report.avakahada.nakshatraNe : report.avakahada.nakshatra}, ${isNepali ? "पद" : "Pada"} ${report.avakahada.pada}`}
-          />
-          <Detail
-            label={isNepali ? "गण" : "Gana"}
-            value={isNepali ? report.avakahada.ganaNe : report.avakahada.gana}
-          />
-          <Detail
-            label={isNepali ? "योनि" : "Yoni"}
-            value={isNepali ? report.avakahada.yoniNe : report.avakahada.yoni}
-          />
-          <Detail
-            label={isNepali ? "नाडी" : "Nadi"}
-            value={isNepali ? report.avakahada.nadiNe : report.avakahada.nadi}
-          />
-          <Detail
-            label={isNepali ? "वर्ण" : "Varna"}
-            value={isNepali ? report.avakahada.varnaNe : report.avakahada.varna}
-          />
-          <Detail
-            label={isNepali ? "पाया" : "Paya"}
-            value={isNepali ? report.avakahada.payaNe : report.avakahada.paya}
-          />
+      <Card
+        id="avakahada"
+        className="scroll-mt-6 py-16 px-48 w-auto h-auto rounded-none bg-gray-100"
+      >
+        <CardContent className="w-auto h-auto p-0">
+          <AvakahadaChakra data={report.avakahada} language={language} />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isNepali ? "ग्रह स्थिति" : "Planetary positions"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <table className="w-full min-w-190 text-left text-sm">
-            <thead className="border-b border-b-border bg-muted/50 text-muted-foreground">
+      <Card
+        id="planets"
+        className="scroll-mt-6 rounded-none border-x-0 shadow-none"
+      >
+        <CardContent className="w-full overflow-x-auto p-0 pb-8">
+          <table className="w-full min-w-245 table-fixed text-base leading-6">
+            <thead className="border-b  border-border bg-secondary">
               <tr>
-                <th className="p-4">{isNepali ? "ग्रह" : "Planet"}</th>
-                <th className="p-4">{isNepali ? "राशि" : "Sign"}</th>
-                <th className="p-4">{isNepali ? "अंश" : "Degree"}</th>
-                <th className="p-4">{isNepali ? "भाव" : "House"}</th>
-                <th className="p-4">{isNepali ? "नक्षत्र" : "Nakshatra"}</th>
-                <th className="p-4">{isNepali ? "नवांश" : "Navamsha"}</th>
-                <th className="p-4">{isNepali ? "अवस्था" : "Status"}</th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "ग्रह" : "Planet"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "राशि" : "Sign"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "अंश" : "Degree"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "भाव" : "House"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "नक्षत्र" : "Nakshatra"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "नवांश" : "Navamsha"}
+                </th>
+                <th className="px-4 py-4 text-center font-bold text-muted-foreground">
+                  {isNepali ? "अवस्था" : "Status"}
+                </th>
               </tr>
             </thead>
             <tbody>
               {report.planets.map((planet) => (
                 <tr
                   key={planet.id}
-                  className="border-b border-b-border last:border-0"
+                  className="border-b border-border last:border-0"
                 >
-                  <td className="p-4 font-semibold">
+                  <td className="px-4 py-4 text-center font-bold text-card-foreground">
                     {isNepali ? planet.nameNe : planet.name}
                   </td>
-                  <td className="p-4">
+                  <td className="px-4 py-4 text-center text-card-foreground">
                     {isNepali ? planet.signNameNe : planet.signName}
                   </td>
-                  <td className="p-4 whitespace-nowrap">{planet.dms}</td>
-                  <td className="p-4">{planet.house}</td>
-                  <td className="p-4">
+                  <td className="whitespace-nowrap px-4 py-4 text-center text-card-foreground">
+                    {planet.dms}
+                  </td>
+                  <td className="px-4 py-4 text-center text-card-foreground">
+                    {planet.house}
+                  </td>
+                  <td className="px-4 py-4 text-center text-card-foreground">
                     {isNepali ? planet.nakshatraNameNe : planet.nakshatraName} (
                     {planet.pada})
                   </td>
-                  <td className="p-4">{planet.d9SignNameNe}</td>
-                  <td className="p-4 whitespace-nowrap">
+                  <td className="px-4 py-4 text-center text-card-foreground">
+                    {isNepali ? planet.d9SignNameNe : planet.d9SignName}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-center text-card-foreground">
                     {planet.isRetrograde
                       ? isNepali
                         ? "वक्र "
@@ -154,25 +155,28 @@ export default function FullChartDetails({
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        <Card
+          id="dasha"
+          className="scroll-mt-6 rounded-none border-r border-t border-border shadow-none"
+        >
+          <CardHeader className="px-16 pb-0 pt-16">
+            <CardTitle className="text-base font-normal leading-6 text-muted-foreground">
               {isNepali ? "विंशोत्तरी महादशा" : "Vimshottari dasha"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className="flex flex-col gap-0 px-16 pb-16 pt-3">
             {report.dashaTimeline.map((period) => (
               <div
                 key={`${period.planet}-${period.startDate}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm"
+                className="flex flex-wrap items-center justify-between gap-3 py-1.5"
               >
-                <span className="font-semibold">
+                <span className="text-2xl font-medium leading-8 text-card-foreground">
                   {isNepali
                     ? `${period.planetNe} महादशा`
                     : `${period.planet} dasha`}
                 </span>
-                <span className="text-muted-foreground">
+                <span className="text-sm leading-5 text-muted-foreground">
                   {period.startDate} - {period.endDate}
                 </span>
               </div>
@@ -180,23 +184,24 @@ export default function FullChartDetails({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
+        <Card
+          id="doshas"
+          className="scroll-mt-6 rounded-none border-r border-t border-border shadow-none"
+        >
+          <CardHeader className="px-16 pb-0 pt-16">
+            <CardTitle className="text-base font-normal leading-6 text-muted-foreground">
               {isNepali ? "दोष एवं योग" : "Doshas and yogas"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 text-sm leading-6">
-            <p>
-              <strong>{isNepali ? "मङ्गल दोष:" : "Manglik dosha:"}</strong>{" "}
+          <CardContent className="flex flex-col gap-3 px-16 pb-16 pt-3">
+            <p className="text-2xl font-medium leading-8 text-accent-foreground">
               {isNepali
                 ? report.doshas.manglikDetailsNe
                 : report.doshas.isManglik
                   ? "Manglik dosha is present."
                   : "Manglik dosha is not present."}
             </p>
-            <p>
-              <strong>{isNepali ? "कालसर्प योग:" : "Kalsarpa yoga:"}</strong>{" "}
+            <p className="text-2xl font-medium leading-8 text-accent-foreground">
               {isNepali
                 ? report.doshas.kalsarpaDetailsNe
                 : report.doshas.hasKalsarpa
@@ -212,9 +217,11 @@ export default function FullChartDetails({
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-muted/30 p-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="flex min-h-[164px] flex-col items-start justify-center gap-3 border-b border-r border-border px-4 py-12 sm:px-8 lg:px-16">
+      <span className="text-base leading-6 text-muted-foreground">{label}</span>
+      <span className="text-2xl font-medium leading-8 text-accent-foreground">
+        {value}
+      </span>
     </div>
   );
 }

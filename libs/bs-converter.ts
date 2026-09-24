@@ -23,12 +23,27 @@ export const NEPALI_MONTHS = [
   "Chaitra",
 ];
 
+export const NEPALI_MONTHS_NE = [
+  "बैशाख",
+  "जेठ",
+  "असार",
+  "श्रावण",
+  "भाद्र",
+  "आश्विन",
+  "कार्तिक",
+  "मंसिर",
+  "पौष",
+  "माघ",
+  "फाल्गुण",
+  "चैत्र",
+];
+
 export const MAJOR_NEPALI_CITIES = [
-  { name: "Kathmandu", lat: 27.7172, lon: 85.324 },
-  { name: "Pokhara", lat: 28.2096, lon: 83.9856 },
-  { name: "Biratnagar", lat: 26.4525, lon: 87.2718 },
-  { name: "Chitwan", lat: 27.5291, lon: 84.3542 },
-  { name: "Butwal", lat: 27.7, lon: 83.45 },
-  { name: "Nepalgunj", lat: 28.05, lon: 81.6167 },
-  { name: "Dhangadhi", lat: 28.6833, lon: 80.6 },
+  { name: "Kathmandu", nameNe: "काठमाडौं", lat: 27.7172, lon: 85.324 },
+  { name: "Pokhara", nameNe: "पोखरा", lat: 28.2096, lon: 83.9856 },
+  { name: "Biratnagar", nameNe: "विराटनगर", lat: 26.4525, lon: 87.2718 },
+  { name: "Chitwan", nameNe: "चितवन", lat: 27.5291, lon: 84.3542 },
+  { name: "Butwal", nameNe: "बुटवल", lat: 27.7, lon: 83.45 },
+  { name: "Nepalgunj", nameNe: "नेपालगञ्ज", lat: 28.05, lon: 81.6167 },
+  { name: "Dhangadhi", nameNe: "धनगढी", lat: 28.6833, lon: 80.6 },
 ];

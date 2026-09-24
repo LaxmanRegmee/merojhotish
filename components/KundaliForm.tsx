@@ -39,7 +39,7 @@ export default function KundaliForm({
   const [city, setCity] = useState("");
 
   return (
-    <form action={onSubmit} className="flex flex-col gap-6">
+    <form action={onSubmit} className="flex flex-col pt-16 gap-6">
       <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border border-border">
         <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
           <CardTitle className="w-full text-sm leading-6 font-semibold">
@@ -57,7 +57,11 @@ export default function KundaliForm({
             <Label htmlFor="bsYear">
               {isNepali ? "जन्म मिति" : "Date of birth"}
             </Label>
-            <NepaliDatePicker {...birthDate} onChange={setBirthDate} />
+            <NepaliDatePicker
+              {...birthDate}
+              language={language}
+              onChange={setBirthDate}
+            />
             <input type="hidden" name="bsYear" value={birthDate.year} />
             <input type="hidden" name="bsMonth" value={birthDate.month} />
             <input type="hidden" name="bsDay" value={birthDate.day} />
@@ -78,7 +82,7 @@ export default function KundaliForm({
               <SelectContent>
                 {MAJOR_NEPALI_CITIES.map((city) => (
                   <SelectItem key={city.name} value={`${city.lat},${city.lon}`}>
-                    {city.name}
+                    {isNepali ? city.nameNe : city.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -94,7 +98,11 @@ export default function KundaliForm({
             <Label htmlFor="birthTime">
               {isNepali ? "जन्म समय सम्झनुहुन्छ?" : "Remember the time?"}
             </Label>
-            <TimePicker value={birthTime} onChange={setBirthTime} />
+            <TimePicker
+              value={birthTime}
+              onChange={setBirthTime}
+              language={language}
+            />
             <input type="hidden" name="birthTime" value={birthTime} />
           </div>
         </CardContent>
@@ -129,12 +137,20 @@ export default function KundaliForm({
 function TimePicker({
   value,
   onChange,
+  language,
 }: {
   value: string;
   onChange: (value: string) => void;
+  language: Language;
 }) {
   const [hourValue, minuteValue] = value.split(":").map(Number);
   const meridiem = hourValue >= 12 ? "PM" : "AM";
+  const meridiemLabel =
+    language === "np"
+      ? meridiem === "PM"
+        ? "अपराह्न"
+        : "पूर्वाह्न"
+      : meridiem;
   const displayHour = hourValue % 12 || 12;
   const hours = Array.from({ length: 12 }, (_, index) => index + 1);
   const minutes = Array.from({ length: 60 }, (_, index) => index);
@@ -155,7 +171,7 @@ function TimePicker({
           variant="outline"
           className="ui-picker-trigger h-8 w-full justify-between rounded-lg px-2.5 text-left text-sm font-normal"
         >
-          {displayHour}:{String(minuteValue).padStart(2, "0")} {meridiem}
+          {displayHour}:{String(minuteValue).padStart(2, "0")} {meridiemLabel}
           <Clock aria-hidden="true" />
         </Button>
       </PopoverTrigger>
@@ -198,7 +214,11 @@ function TimePicker({
                 className="ui-picker-option flex size-7 items-center justify-center rounded-full text-sm"
                 data-selected={period === meridiem}
               >
-                {period}
+                {language === "np"
+                  ? period === "PM"
+                    ? "अपराह्न"
+                    : "पूर्वाह्न"
+                  : period}
               </button>
             ))}
           </div>

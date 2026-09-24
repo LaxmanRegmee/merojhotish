@@ -19,13 +19,18 @@ export default function LanguageSwitcher({
   }
 
   return (
-    <div className="flex h-5 items-center gap-2" aria-label="Language">
+    <div
+      className="flex h-5 items-center gap-2"
+      aria-label={isNepali ? "भाषा" : "Language"}
+    >
       <span className="text-sm font-medium leading-5 opacity-50">NP</span>
       <button
         type="button"
         role="switch"
         aria-checked={!isNepali}
-        aria-label={`Switch language to ${isNepali ? "English" : "Nepali"}`}
+        aria-label={
+          isNepali ? "भाषा अंग्रेजीमा बदल्नुहोस्" : "Switch language to Nepali"
+        }
         onClick={toggleLanguage}
         className={`ui-control relative flex h-[18px] w-8 shrink-0 items-center rounded-full border-0 p-px ${isNepali ? "justify-start bg-input" : "justify-end bg-primary"}`}
       >

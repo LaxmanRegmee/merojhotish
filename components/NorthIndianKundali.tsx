@@ -32,15 +32,13 @@ export default function NorthIndianKundali({
   chartData,
 }: NorthIndianChartProps) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <div className="mb-3 text-center">
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
-        {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        )}
+    <div className="p-3 text-primary">
+      <div className="mb-2 text-center">
+        <h3 className="text-lg font-regular text-foreground">{title}</h3>
+    
       </div>
 
-      <div className="mx-auto aspect-square w-full max-w-105">
+      <div className="mx-auto bg-card aspect-square w-full max-w-105">
         <svg viewBox="0 0 400 400" className="h-full w-full select-none">
           <rect
             x="2"

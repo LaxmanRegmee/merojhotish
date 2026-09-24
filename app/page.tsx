@@ -7,8 +7,8 @@ import { generateKundaliAction } from "@/app/action";
 import KundaliForm from "@/components/KundaliForm";
 import KundaliChartsView from "@/components/KundaliChartsView";
 import FullChartDetails from "@/components/FullChartDetails";
-import PanchangCard from "@/components/PanchangCard";
 import LanguageSwitcher, { type Language } from "@/components/LanguageSwitcher";
+import KundaliReportLayout from "@/components/KundaliReportLayout";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
@@ -29,10 +29,10 @@ export default function Home() {
     } catch (submissionError) {
       setChartData(null);
       setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : isNepali
-            ? "कुण्डली बनाउन सकिएन।"
+        isNepali
+          ? "कुण्डली बनाउन सकिएन।"
+          : submissionError instanceof Error
+            ? submissionError.message
             : "Could not create the birth chart.",
       );
     } finally {
@@ -88,25 +88,18 @@ export default function Home() {
         <section className="min-h-140.5">
           <div
             id="birth-details"
-            className="mx-auto min-h-[562px] w-full max-w-[1272px] border-x border-border px-5 pt-[78px]"
+            className="mx-auto min-h-140.5 w-full max-w-318 border-x border-border"
           >
             {chartData ? (
-              <div className="report-enter mx-auto flex max-w-7xl flex-col gap-6 pb-8">
-                <KundaliChartsView report={chartData} language={language} />
-                <PanchangCard
-                  language={language}
-                  lagna={{
-                    rashiName: chartData.lagna.signNameNe,
-                    degree: chartData.lagna.dms,
-                  }}
-                  panchang={{
-                    janmaRashi: chartData.avakahada.rashiNe,
-                    nakshatra: chartData.panchang.nakshatraNe,
-                    tithi: chartData.panchang.tithiNameNe,
-                  }}
-                />
-                <FullChartDetails report={chartData} language={language} />
-              </div>
+              <KundaliReportLayout language={language}>
+                <div className="report-enter w-auto flex flex-col">
+                  <section id="charts" className="scroll-mt-6">
+                    <KundaliChartsView report={chartData} language={language} />
+                  </section>
+
+                  <FullChartDetails report={chartData} language={language} />
+                </div>
+              </KundaliReportLayout>
             ) : (
               <KundaliForm
                 onSubmit={handleSubmit}

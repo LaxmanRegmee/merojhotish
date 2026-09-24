@@ -2,6 +2,7 @@
 import { generateFullBirthChart } from "@/libs/jyotish-engine";
 import KundaliChartsView from "@/components/KundaliChartsView";
 import FullChartDetails from "@/components/FullChartDetails";
+import KundaliReportLayout from "@/components/KundaliReportLayout";
 
 export default async function KundaliReportPage() {
   const report = await generateFullBirthChart(
@@ -11,9 +12,13 @@ export default async function KundaliReportPage() {
   );
 
   return (
-    <main className="max-w-5xl mx-auto p-6 space-y-6">
-      <KundaliChartsView report={report} language="en" />
-      <FullChartDetails report={report} language="en" />
-    </main>
+    <KundaliReportLayout language="en">
+      <div className="space-y-8">
+        <section id="charts" className="scroll-mt-6">
+          <KundaliChartsView report={report} language="en" />
+        </section>
+        <FullChartDetails report={report} language="en" />
+      </div>
+    </KundaliReportLayout>
   );
 }

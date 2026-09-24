@@ -3,9 +3,10 @@
 import * as React from "react";
 import { CalendarDots, CaretLeft, CaretRight } from "@phosphor-icons/react";
 
-import { NEPALI_MONTHS } from "@/libs/bs-converter";
+import { NEPALI_MONTHS, NEPALI_MONTHS_NE } from "@/libs/bs-converter";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
+import type { Language } from "@/components/LanguageSwitcher";
 import {
   Popover,
   PopoverContent,
@@ -23,6 +24,7 @@ interface NepaliDatePickerProps {
   year: number;
   month: number;
   day: number;
+  language: Language;
   onChange: (date: { year: number; month: number; day: number }) => void;
 }
 
@@ -30,9 +32,12 @@ export function NepaliDatePicker({
   year,
   month,
   day,
+  language,
   onChange,
 }: NepaliDatePickerProps) {
   const [open, setOpen] = React.useState(false);
+  const isNepali = language === "np";
+  const monthNames = isNepali ? NEPALI_MONTHS_NE : NEPALI_MONTHS;
 
   function updateDate(partial: Partial<NepaliDatePickerProps>) {
     onChange({ year, month, day, ...partial });
@@ -64,8 +69,10 @@ export function NepaliDatePicker({
         >
           <span className="truncate">
             {year && day
-              ? `${year} ${NEPALI_MONTHS[month - 1]} ${day}`
-              : "Select a date"}
+              ? `${year} ${monthNames[month - 1]} ${day}`
+              : isNepali
+                ? "मिति छान्नुहोस्"
+                : "Select a date"}
           </span>
           <CalendarDots className="size-4 text-muted-foreground" />
         </Button>
@@ -77,7 +84,7 @@ export function NepaliDatePicker({
         <div className="mb-2 flex h-8 items-center justify-between">
           <button
             type="button"
-            aria-label="Previous month"
+            aria-label={isNepali ? "अघिल्लो महिना" : "Previous month"}
             onClick={() => changeMonth(-1)}
             className="ui-picker-option flex size-7 items-center justify-center rounded-md"
           >
@@ -92,13 +99,13 @@ export function NepaliDatePicker({
               }
             >
               <SelectTrigger
-                aria-label="B.S. month"
+                aria-label={isNepali ? "वि.सं. महिना" : "B.S. month"}
                 className="h-7 w-auto gap-0 border-0 bg-transparent px-1 text-sm shadow-none"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {NEPALI_MONTHS.map((monthName, index) => (
+                {monthNames.map((monthName, index) => (
                   <SelectItem key={monthName} value={String(index + 1)}>
                     {monthName}
                   </SelectItem>
@@ -112,7 +119,7 @@ export function NepaliDatePicker({
               }
             >
               <SelectTrigger
-                aria-label="B.S. year"
+                aria-label={isNepali ? "वि.सं. वर्ष" : "B.S. year"}
                 className="h-7 w-[58px] border-0 bg-transparent px-1 text-sm shadow-none"
               >
                 <SelectValue />
@@ -131,7 +138,7 @@ export function NepaliDatePicker({
 
           <button
             type="button"
-            aria-label="Next month"
+            aria-label={isNepali ? "अर्को महिना" : "Next month"}
             onClick={() => changeMonth(1)}
             className="ui-picker-option flex size-7 items-center justify-center rounded-md"
           >
@@ -140,14 +147,21 @@ export function NepaliDatePicker({
         </div>
 
         <div className="grid grid-cols-7 text-center text-xs text-muted-foreground">
-          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((weekday) => (
+          {(isNepali
+            ? ["आइत", "सोम", "मंगल", "बुध", "बिहि", "शुक्र", "शनि"]
+            : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+          ).map((weekday) => (
             <span key={weekday} className="h-7 leading-7">
               {weekday}
             </span>
           ))}
         </div>
 
-        <div className="grid grid-cols-7" role="grid" aria-label="B.S. day">
+        <div
+          className="grid grid-cols-7"
+          role="grid"
+          aria-label={isNepali ? "वि.सं. दिन" : "B.S. day"}
+        >
           {Array.from({ length: 32 }, (_, index) => index + 1).map(
             (dayNumber) => (
               <button
