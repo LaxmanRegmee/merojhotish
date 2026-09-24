@@ -189,5 +189,6 @@ button:disabled {
 }
 
 ::selection {
-  background: color-mix(in oklch, var(--accent) 28%, transparent);
+  background: var(--primary);
+  color: var(--primary-foreground);
 }

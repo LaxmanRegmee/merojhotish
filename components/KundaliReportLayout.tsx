@@ -14,8 +14,7 @@ const sections = [
   { id: "panchang", label: "Panchang" },
   { id: "avakahada", label: "Avakahada chart" },
   { id: "planets", label: "Planetary positions" },
-  { id: "dasha", label: "Vimshottari dasha" },
-  { id: "doshas", label: "Doshas and yogas" },
+  { id: "dasha", label: "Dosh and Dashas" },
 ];
 
 export default function KundaliReportLayout({
@@ -95,13 +94,6 @@ export default function KundaliReportLayout({
       </aside>
 
       <div className="min-w-0 flex-1">
-        <div className=" w-auto pr-80 pl-16 py-16 border-b border-border">
-          <p className="text-2xl font-medium leading-8 text-muted-foreground">
-            {isNepali
-              ? "यो चार्टले तपाईंको जन्म समयमा आकाशीय अवस्थाको सटीक नक्सा प्रस्तुत गर्दछ।"
-              : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
-          </p>
-        </div>
         {children}
       </div>
     </div>

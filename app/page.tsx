@@ -45,7 +45,7 @@ export default function Home() {
       className="min-h-screen bg-background font-sans text-foreground"
       lang={language === "np" ? "ne" : "en"}
     >
-      <header className="flex h-[85px] items-center justify-between border-b border-b-border px-6 md:px-[84px]">
+      <header className="flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
         <div className="flex items-center gap-2.5">
           <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <CircleHalfTiltIcon weight="regular" size={24} aria-hidden="true" />
@@ -65,7 +65,7 @@ export default function Home() {
                 <CakeIcon weight="fill" size={12} aria-hidden="true" />
                 {isNepali ? "जन्म कुण्डली स्टुडियो" : "Birth chart studio"}
               </div>
-              <h1 className="max-w-[619px] text-5xl font-semibold leading-15 tracking-tight text-primary md:text-[3.25rem] md:leading-[1.02]">
+              <h1 className="max-w-154.75 text-5xl font-semibold leading-15 tracking-tight text-primary md:text-[3.25rem] md:leading-[1.02]">
                 {isNepali ? "आकाशको नक्सा," : "Map of the sky,"}
                 <br />
                 {isNepali ? "तपाईंको जीवनको कथा!" : "Story of your life!"}
@@ -94,6 +94,13 @@ export default function Home() {
               <KundaliReportLayout language={language}>
                 <div className="report-enter w-auto flex flex-col">
                   <section id="charts" className="scroll-mt-6">
+                    <div className="border-b border-border px-6 py-16 md:px-16 md:pr-80">
+                      <p className="text-2xl font-medium leading-8 text-foreground">
+                        {isNepali
+                          ? "यो चार्टले तपाईंको जन्म समयमा आकाशीय अवस्थाको सटीक नक्सा प्रस्तुत गर्दछ।"
+                          : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
+                      </p>
+                    </div>
                     <KundaliChartsView report={chartData} language={language} />
                   </section>
 
@@ -108,7 +115,7 @@ export default function Home() {
               />
             )}
             {error && !chartData && (
-              <p className="mx-auto mt-3 max-w-[387px] rounded-lg border border-border bg-destructive/10 p-3 text-sm text-destructive">
+              <p className="mx-auto mt-3 max-w-96.75 rounded-lg border border-border bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </p>
             )}

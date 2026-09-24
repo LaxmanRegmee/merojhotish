@@ -155,7 +155,7 @@ export default function FullChartDetails({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 h-svh">
         <Card
           id="dasha"
           className="scroll-mt-6 rounded-none border-r border-t border-border shadow-none"
@@ -186,7 +186,7 @@ export default function FullChartDetails({
 
         <Card
           id="doshas"
-          className="scroll-mt-6 rounded-none border-r border-t border-border shadow-none"
+          className="scroll-mt-6 rounded-none  border-t border-border h-max shadow-none"
         >
           <CardHeader className="px-16 pb-0 pt-16">
             <CardTitle className="text-base font-normal leading-6 text-muted-foreground">
@@ -217,7 +217,7 @@ export default function FullChartDetails({
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-h-[164px] flex-col items-start justify-center gap-3 border-b border-r border-border px-4 py-12 sm:px-8 lg:px-16">
+    <div className="flex min-h-41 flex-col items-start justify-center gap-3 border-b border-r border-border px-4 py-12 sm:px-8 lg:px-16">
       <span className="text-base leading-6 text-muted-foreground">{label}</span>
       <span className="text-2xl font-medium leading-8 text-accent-foreground">
         {value}

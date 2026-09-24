@@ -32,7 +32,7 @@ export default function LanguageSwitcher({
           isNepali ? "भाषा अंग्रेजीमा बदल्नुहोस्" : "Switch language to Nepali"
         }
         onClick={toggleLanguage}
-        className={`ui-control relative flex h-[18px] w-8 shrink-0 items-center rounded-full border-0 p-px ${isNepali ? "justify-start bg-input" : "justify-end bg-primary"}`}
+        className={`ui-control relative flex h-4.5 w-8 shrink-0 items-center rounded-full border-0 p-px ${isNepali ? "justify-start bg-input" : "justify-end bg-primary"}`}
       >
         <span
           aria-hidden="true"

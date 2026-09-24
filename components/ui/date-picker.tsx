@@ -120,7 +120,7 @@ export function NepaliDatePicker({
             >
               <SelectTrigger
                 aria-label={isNepali ? "वि.सं. वर्ष" : "B.S. year"}
-                className="h-7 w-[58px] border-0 bg-transparent px-1 text-sm shadow-none"
+                className="h-7 w-14.5 border-0 bg-transparent px-1 text-sm shadow-none"
               >
                 <SelectValue />
               </SelectTrigger>
