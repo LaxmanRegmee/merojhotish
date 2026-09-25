@@ -40,7 +40,7 @@ export default function KundaliForm({
 
   return (
     <form action={onSubmit} className="flex flex-col pt-16 gap-6">
-      <Card className="mx-auto w-full max-w-[387px] overflow-visible rounded-xl border border-border">
+      <Card className="mx-auto w-full max-w-96.75 overflow-visible rounded-xl border border-border">
         <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
           <CardTitle className="w-full text-sm leading-6 font-semibold">
             {isNepali ? "जन्म विवरण" : "Birth Details"}
@@ -53,7 +53,7 @@ export default function KundaliForm({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-3 px-4 py-3">
-          <div className="flex h-[60px] flex-col gap-2">
+          <div className="flex h-15 flex-col gap-2">
             <Label htmlFor="bsYear">
               {isNepali ? "जन्म मिति" : "Date of birth"}
             </Label>
@@ -67,7 +67,7 @@ export default function KundaliForm({
             <input type="hidden" name="bsDay" value={birthDate.day} />
           </div>
 
-          <div className="flex h-[88px] flex-col gap-2">
+          <div className="flex h-22 flex-col gap-2">
             <Label htmlFor="city">
               {isNepali ? "तपाईं कहाँ जन्मनुभयो?" : "Where were you born?"}
             </Label>
@@ -94,7 +94,7 @@ export default function KundaliForm({
             </p>
           </div>
 
-          <div className="flex h-[60px] flex-col gap-2">
+          <div className="flex h-15 flex-col gap-2">
             <Label htmlFor="birthTime">
               {isNepali ? "जन्म समय सम्झनुहुन्छ?" : "Remember the time?"}
             </Label>
@@ -205,7 +205,7 @@ function TimePicker({
             ))}
           </div>
 
-          <div className="ml-[23px] flex flex-col justify-center gap-0">
+          <div className="ml-5.75 flex flex-col justify-center gap-0">
             {(["AM", "PM"] as const).map((period) => (
               <button
                 key={period}
