@@ -1,8 +1,8 @@
 // app/actions.ts
 "use server";
 
-import { bsToAd } from "@/libs/bs-converter";
-import { generateFullBirthChart } from "@/libs/jyotish-engine";
+import { bsToAd } from "@/lib/bs-converter";
+import { generateFullBirthChart } from "@/lib/jyotish-engine";
 
 export async function generateKundaliAction(formData: FormData) {
   const bsYear = Number(formData.get("bsYear"));

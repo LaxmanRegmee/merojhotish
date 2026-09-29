@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { Language } from "@/components/LanguageSwitcher";
+import { Button} from "@/components/ui/button";
 
 interface KundaliReportLayoutProps {
   children: ReactNode;
@@ -69,24 +70,25 @@ export default function KundaliReportLayout({
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-border bg-card px-5 py-16 md:block">
         <nav aria-label={isNepali ? "रिपोर्टका भागहरू" : "Report sections"}>
     
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             {sections.map((section) => {
               const isActive = activeSection === section.id;
               return (
-                <button
+                <Button 
                   key={section.id}
-                  type="button"
+                  variant={isActive ? "ghost" : "ghost"}
                   onClick={() => scrollToSection(section.id)}
-                  className={`group flex w-full items-start justify-between gap-4 border-l-2 py-1.5 pl-3 text-left text-14px leading-4 transition-colors ${
+                  className={`group flex w-full items-start text-sm justify-start ${
                     isActive
-                      ? "border-primary font-semibold text-primary"
-                      : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                      ? "font-semibold bg-background text-foreground"
+                      : "text-muted-foreground hover:bg-accent"
                   }`}
                   aria-current={isActive ? "location" : undefined}
                 >
                   <span>{section.label}</span>
       
-                </button>
+                </Button>
+
               );
             })}
           </div>

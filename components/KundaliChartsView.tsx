@@ -3,7 +3,7 @@
 
 import React from "react";
 import NorthIndianChart from "./NorthIndianKundali";
-import { CompleteBirthChartReport } from "@/libs/jyotish-engine";
+import { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 import type { Language } from "@/components/LanguageSwitcher";
 
 interface Props {
@@ -27,7 +27,7 @@ export default function KundaliChartsView({ report, language }: Props) {
       ]),
     );
   return (
-    <div className="grid h-auto w-full grid-cols-1 gap-4 bg-gray-100 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
+    <div className="grid h-auto w-full grid-cols-1 gap-4 bg-gray-50 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
       {/* D1 Rashi Kundali */}
       <NorthIndianChart
         title={isNepali ? "लग्न कुण्डली (D1)" : "Ascendant Chart (D1)"}

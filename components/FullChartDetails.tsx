@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AvakahadaChakra from "@/components/AvakahadaChakra";
-import type { CompleteBirthChartReport } from "@/libs/jyotish-engine";
+import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 import type { Language } from "@/components/LanguageSwitcher";
 
 interface FullChartDetailsProps {
@@ -72,7 +72,7 @@ export default function FullChartDetails({
 
       <Card
         id="avakahada"
-        className="scroll-mt-6 py-16 px-48 w-auto h-auto rounded-none bg-gray-100"
+        className="scroll-mt-6 py-16 px-48 w-auto h-auto rounded-none bg-gray-50"
       >
         <CardContent className="w-auto h-auto p-0">
           <AvakahadaChakra data={report.avakahada} language={language} />

@@ -2,26 +2,19 @@
 "use client";
 
 import { useState } from "react";
-import { CircleNotch, Clock } from "@phosphor-icons/react";
-import { MAJOR_NEPALI_CITIES } from "@/libs/bs-converter";
+import { SpinnerIcon, ClockIcon } from "@phosphor-icons/react";
+import { MAJOR_NEPALI_CITIES } from "@/lib/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { NepaliDatePicker } from "@/components/ui/date-picker";
+import {Combobox, ComboboxInput, ComboboxItem,ComboboxEmpty,ComboboxList, ComboboxContent} from "@/components/ui/combobox";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Language } from "@/components/LanguageSwitcher";
-
 interface FormProps {
   onSubmit: (formData: FormData) => void;
   loading: boolean;
@@ -67,27 +60,25 @@ export default function KundaliForm({
             <input type="hidden" name="bsDay" value={birthDate.day} />
           </div>
 
-          <div className="flex h-22 flex-col gap-2">
+          <div className="flex flex-col h-auto gap-2">
             <Label htmlFor="city">
               {isNepali ? "तपाईं कहाँ जन्मनुभयो?" : "Where were you born?"}
             </Label>
-            <Select name="city" value={city} onValueChange={setCity}>
-              <SelectTrigger id="city" className="h-8 rounded-lg px-2.5">
-                <SelectValue
-                  placeholder={
-                    isNepali ? "जिल्ला छान्नुहोस्" : "Choose a district"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {MAJOR_NEPALI_CITIES.map((city) => (
-                  <SelectItem key={city.name} value={`${city.lat},${city.lon}`}>
-                    {isNepali ? city.nameNe : city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs leading-5 text-muted-foreground">
+
+            <Combobox items={MAJOR_NEPALI_CITIES} value={city}>
+              <ComboboxInput placeholder="Select a framework" />
+              <ComboboxContent>
+                <ComboboxEmpty>No items found.</ComboboxEmpty>
+                <ComboboxList>
+                  {(item) => (
+                    <ComboboxItem key={item} value={city} onSelect={() => setCity(item)}>
+                      {item}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+            <p className="text-sm leading-5 text-muted-foreground">
               {isNepali
                 ? "तपाईं जन्मनुभएको जिल्ला छान्नुहोस्"
                 : "Select a district that you were born in"}
@@ -111,11 +102,11 @@ export default function KundaliForm({
           <Button
             type="submit"
             disabled={loading || !birthDate.day || !city}
-            className="h-8 w-full rounded-lg bg-primary text-xs font-medium text-primary-foreground"
+            className="h-8 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground"
           >
             {loading ? (
               <>
-                <CircleNotch
+                <SpinnerIcon
                   className="animate-spin"
                   size={14}
                   aria-hidden="true"
@@ -172,7 +163,7 @@ function TimePicker({
           className="ui-picker-trigger h-8 w-full justify-between rounded-lg px-2.5 text-left text-sm font-normal"
         >
           {displayHour}:{String(minuteValue).padStart(2, "0")} {meridiemLabel}
-          <Clock aria-hidden="true" />
+          <ClockIcon aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-32.75 p-2">

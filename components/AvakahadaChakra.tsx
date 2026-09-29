@@ -1,6 +1,6 @@
 "use client";
 
-import type { AvakahadaChakra as AvakahadaChakraData } from "@/libs/jyotish-engine";
+import type { AvakahadaChakra as AvakahadaChakraData } from "@/lib/jyotish-engine";
 import type { Language } from "@/components/LanguageSwitcher";
 
 interface AvakahadaChakraProps {

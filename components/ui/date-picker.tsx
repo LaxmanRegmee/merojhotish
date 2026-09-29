@@ -3,8 +3,8 @@
 import * as React from "react";
 import { CalendarDots, CaretLeft, CaretRight } from "@phosphor-icons/react";
 
-import { NEPALI_MONTHS, NEPALI_MONTHS_NE } from "@/libs/bs-converter";
-import { cn } from "@/libs/utils";
+import { NEPALI_MONTHS, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Language } from "@/components/LanguageSwitcher";
 import {
