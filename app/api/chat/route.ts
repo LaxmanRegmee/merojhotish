@@ -1,4 +1,4 @@
-import { buildAstrologySystemPrompt } from "@/lib/prompts";
+import { buildAstrologySummaryPrompt } from "@/lib/prompts";
 
 export async function POST(req: Request) {
   const { messages, reportData } = await req.json();
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model: "google/gemma-4-31b-it",
         messages: [
-          { role: "system", content: buildAstrologySystemPrompt(reportData) },
+          { role: "system", content: buildAstrologySummaryPrompt(reportData) },
           ...messages,
         ],
         stream: true,
