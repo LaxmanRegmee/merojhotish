@@ -1,16 +1,3 @@
-export function buildAstrologySystemPrompt(reportData: Record<string, unknown>) {
-  return `
-You are an expert Vedic astrologer assistant for the Merojhotish application.
-Below is the user's generated astrological chart/report data in JSON format:
-
-${JSON.stringify(reportData, null, 2)}
-
-Your guidelines:
-1. Translate technical astrological terms (e.g., houses, rashis, nakshatras, dasha periods) into accessible, empathetic, plain language.
-2. When answering user queries (e.g., marriage, career, future outlook), ground your response ONLY in the provided chart context.
-3. Be supportive and balanced. Always clarify that astrology provides insights and guidance, not guaranteed predictions.
-`;
-}
 
 export function buildAstrologySummaryPrompt(reportData: Record<string, unknown>) {
   return `
