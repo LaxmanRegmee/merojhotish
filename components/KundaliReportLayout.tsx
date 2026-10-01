@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Language } from "@/components/LanguageSwitcher";
-import { Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface KundaliReportLayoutProps {
   children: ReactNode;
@@ -23,6 +23,7 @@ export default function KundaliReportLayout({
   language,
 }: KundaliReportLayoutProps) {
   const [activeSection, setActiveSection] = useState("charts");
+  const pendingSectionRef = useRef<string | null>(null);
 
   useEffect(() => {
     const sectionElements = sections
@@ -33,9 +34,25 @@ export default function KundaliReportLayout({
 
     const observer = new IntersectionObserver(
       (entries) => {
+        const pendingSection = pendingSectionRef.current;
+        if (pendingSection) {
+          const targetEntry = entries.find(
+            (entry) => entry.target.id === pendingSection,
+          );
+
+          if (!targetEntry?.isIntersecting) return;
+
+          pendingSectionRef.current = null;
+          setActiveSection(pendingSection);
+          return;
+        }
+
         const visibleSections = entries
           .filter((entry) => entry.isIntersecting)
-          .sort((first, second) => first.boundingClientRect.top - second.boundingClientRect.top);
+          .sort(
+            (first, second) =>
+              first.boundingClientRect.top - second.boundingClientRect.top,
+          );
 
         if (visibleSections[0]) {
           setActiveSection(visibleSections[0].target.id);
@@ -54,6 +71,7 @@ export default function KundaliReportLayout({
   }, []);
 
   function scrollToSection(id: string) {
+    pendingSectionRef.current = id;
     document
       .getElementById(id)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -61,43 +79,47 @@ export default function KundaliReportLayout({
   }
 
   const isNepali = language === "np";
+  const activeSectionIndex = Math.max(
+    sections.findIndex((section) => section.id === activeSection),
+    0,
+  );
 
   return (
-    <div
-      role="main"
-      className="mx-auto flex w-full items-start bg-background"
-    >
+    <div role="main" className="mx-auto flex w-full items-start bg-background">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-border bg-card px-5 py-16 md:block">
-        <nav aria-label={isNepali ? "रिपोर्टका भागहरू" : "Report sections"}>
-    
+        <nav
+          className="relative"
+          aria-label={isNepali ? "रिपोर्टका भागहरू" : "Report sections"}
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-5 top-0 h-8 w-0.5 bg-primary transition-transform duration-200"
+            style={{ transform: `translateY(${activeSectionIndex * 2}rem)` }}
+          />
           <div className="flex flex-col">
             {sections.map((section) => {
               const isActive = activeSection === section.id;
               return (
-                <Button 
+                <Button
                   key={section.id}
-                  variant={isActive ? "ghost" : "ghost"}
+                  variant="ghost"
                   onClick={() => scrollToSection(section.id)}
-                  className={`group flex w-full items-start text-sm justify-start ${
+                  className={`flex w-full items-start justify-start text-sm hover:bg-transparent! hover:text-foreground! ${
                     isActive
-                      ? "font-semibold bg-background text-foreground"
-                      : "text-muted-foreground hover:bg-accent"
+                      ? "font-semibold text-foreground"
+                      : "text-muted-foreground"
                   }`}
                   aria-current={isActive ? "location" : undefined}
                 >
                   <span>{section.label}</span>
-      
                 </Button>
-
               );
             })}
           </div>
         </nav>
       </aside>
 
-      <div className="min-w-0 flex-1">
-        {children}
-      </div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

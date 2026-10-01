@@ -3,11 +3,11 @@ import { buildAstrologySummaryPrompt } from "@/lib/prompts";
 
 export async function POST(req: Request) {
   try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.NVIDIA_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "OpenRouter API key is missing in server environment." },
+        { error: "NVIDIA API key is missing in server environment." },
         { status: 500 },
       );
     }
@@ -22,24 +22,20 @@ export async function POST(req: Request) {
     }
 
     const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
+      "https://integrate.api.nvidia.com/v1/chat/completions",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          "HTTP-Referer":
-            process.env.NEXT_PUBLIC_SITE_URL ||
-            "https://merojhotish.vercel.app",
-          "X-Title": "MeroJyotish Astrology App",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openrouter/free",
+          model: "nvidia/nemotron-3-ultra-550b-a55b",
           messages: [
             { role: "system", content: buildAstrologySummaryPrompt(chartData) },
             { role: "user", content: buildAstrologySummaryPrompt(chartData) },
           ],
-          temperature: 0.7,
+          temperature: 1,
           max_tokens: 1200,
         }),
       },
@@ -57,7 +53,7 @@ export async function POST(req: Request) {
         );
       }
       return NextResponse.json(
-        { error: `OpenRouter API Error: ${errorText}` },
+        { error: `NVIDIA API Error: ${errorText}` },
         { status: response.status },
       );
     }

@@ -1,7 +1,38 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  MoonIcon,
+  GenderMaleIcon,
+  SunIcon,
+  AsclepiusIcon,
+} from "@phosphor-icons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Saturn02Icon,
+  JupiterIcon,
+  VenusIcon,
+  Asteroid02Icon,
+  Moon01Icon,
+} from "@hugeicons/core-free-icons";
+
+function App() {
+  return (
+    <HugeiconsIcon
+      icon={Saturn02Icon}
+      size={24}
+      color="currentColor"
+      strokeWidth={1.5}
+    />
+  );
+}
 import AvakahadaChakra from "@/components/AvakahadaChakra";
-import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
+import { MAJOR_NEPALI_CITIES, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
+import type {
+  CompleteBirthChartReport,
+  DashaPeriod,
+} from "@/lib/jyotish-engine";
 import type { Language } from "@/components/LanguageSwitcher";
+import type { ReactNode } from "react";
 
 interface FullChartDetailsProps {
   report: CompleteBirthChartReport;
@@ -13,6 +44,7 @@ export default function FullChartDetails({
   language,
 }: FullChartDetailsProps) {
   const isNepali = language === "np";
+  const today = new Date();
   return (
     <div className="flex flex-col">
       <Card
@@ -42,11 +74,19 @@ export default function FullChartDetails({
           />
           <Detail
             label={isNepali ? "जन्म मिति" : "Birth date"}
-            value={report.birthDetails.gregorianDate}
+            value={formatBirthDate(
+              report.birthDetails.gregorianDate,
+              report.birthDetails.nepaliDate,
+              isNepali,
+            )}
           />
           <Detail
             label={isNepali ? "स्थान" : "Location"}
-            value={`${report.birthDetails.latitude}, ${report.birthDetails.longitude}`}
+            value={formatBirthLocation(
+              report.birthDetails.latitude,
+              report.birthDetails.longitude,
+              isNepali,
+            )}
           />
           <Detail
             label={isNepali ? "पक्ष" : "Paksha"}
@@ -155,61 +195,230 @@ export default function FullChartDetails({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 h-svh">
-        <Card
+      <div className="grid grid-cols-1 border-t border-border lg:grid-cols-2">
+        <section
           id="dasha"
-          className="scroll-mt-6 rounded-none border-r border-t border-border shadow-none"
+          className="scroll-mt-6 border-b border-border px-6 py-10 sm:px-10 lg:border-b-0 lg:border-r lg:px-16 lg:py-16"
         >
-          <CardHeader className="px-16 pb-0 pt-16">
-            <CardTitle className="text-base font-normal leading-6 text-muted-foreground">
-              {isNepali ? "विंशोत्तरी महादशा" : "Vimshottari dasha"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-0 px-16 pb-16 pt-3">
+          <h2 className="text-base font-normal leading-6 text-muted-foreground">
+            {isNepali ? "विंशोत्तरी महादशा" : "Vimshottari dasha"}
+          </h2>
+          <div className="mt-3 flex flex-col gap-2">
             {report.dashaTimeline.map((period) => (
-              <div
+              <DashaItem
                 key={`${period.planet}-${period.startDate}`}
-                className="flex flex-wrap items-center justify-between gap-3 py-1.5"
-              >
-                <span className="text-2xl font-medium leading-8 text-card-foreground">
-                  {isNepali
+                icon={getDashaIcon(period.planet)}
+                title={
+                  isNepali
                     ? `${period.planetNe} महादशा`
-                    : `${period.planet} dasha`}
-                </span>
-                <span className="text-sm leading-5 text-muted-foreground">
-                  {period.startDate} - {period.endDate}
-                </span>
-              </div>
+                    : `${period.planet} dasha`
+                }
+                description={`${period.startDate} - ${period.endDate}`}
+                status={getDashaStatus(period, today)}
+                statusLabel={getDashaStatusLabel(
+                  getDashaStatus(period, today),
+                  isNepali,
+                )}
+              />
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card
+        <section
           id="doshas"
-          className="scroll-mt-6 rounded-none  border-t border-border h-max shadow-none"
+          className="scroll-mt-6 px-6 py-10 sm:px-10 lg:px-16 lg:py-16"
         >
-          <CardHeader className="px-16 pb-0 pt-16">
-            <CardTitle className="text-base font-normal leading-6 text-muted-foreground">
-              {isNepali ? "दोष एवं योग" : "Doshas and yogas"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 px-16 pb-16 pt-3">
-            <p className="text-2xl font-medium leading-8 text-accent-foreground">
-              {isNepali
-                ? report.doshas.manglikDetailsNe
-                : report.doshas.isManglik
-                  ? "Manglik dosha is present."
-                  : "Manglik dosha is not present."}
-            </p>
-            <p className="text-2xl font-medium leading-8 text-accent-foreground">
-              {isNepali
-                ? report.doshas.kalsarpaDetailsNe
-                : report.doshas.hasKalsarpa
-                  ? "Kalsarpa yoga is present."
-                  : "Kalsarpa yoga is not present."}
-            </p>
-          </CardContent>
-        </Card>
+          <h2 className="text-base font-normal leading-6 text-muted-foreground">
+            {isNepali ? "दोष एवं योग" : "Doshas and yogas"}
+          </h2>
+          <div className="mt-3 flex flex-col ">
+            <InsightItem
+              icon={
+                <GenderMaleIcon size={32} color="foreground" weight="regular" />
+              }
+              title={
+                isNepali
+                  ? `मङ्गल दोष · ${report.doshas.isManglik ? "छ" : "छैन"}`
+                  : `Manglik Dosha · ${report.doshas.isManglik ? "Present" : "Not present"}`
+              }
+              description={
+                isNepali
+                  ? report.doshas.manglikDetailsNe
+                  : `Mangal Dosh arises when Mars, known as Mangal Graha, is placed in some specific house in the native birth chart. Individuals who have this placement are called Manglik. It is ${report.doshas.isManglik ? "present" : "not present"} in this chart.`
+              }
+            />
+            <InsightItem
+              icon={
+                <AsclepiusIcon size={32} color="foreground" weight="regular" />
+              }
+              title={
+                isNepali
+                  ? `कालसर्प योग · ${report.doshas.hasKalsarpa ? "छ" : "छैन"}`
+                  : `Kalsarpa Yoga · ${report.doshas.hasKalsarpa ? "Present" : "Not present"}`
+              }
+              description={
+                isNepali
+                  ? report.doshas.kalsarpaDetailsNe
+                  : `Rahu and Ketu always sit opposite each other. If all planets fall inside the arc between them, Kalsarpa Yoga is said to be present. It is ${report.doshas.hasKalsarpa ? "present" : "not present"} in this chart.`
+              }
+            />
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function formatBirthDate(
+  gregorianValue: string,
+  nepaliDate: { year: number; month: number; day: number },
+  isNepali: boolean,
+) {
+  if (isNepali) {
+    return `${nepaliDate.day} ${NEPALI_MONTHS_NE[nepaliDate.month - 1]} ${nepaliDate.year}`;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(gregorianValue));
+}
+
+function formatBirthLocation(
+  latitude: number,
+  longitude: number,
+  isNepali: boolean,
+) {
+  const city = MAJOR_NEPALI_CITIES.find(
+    (candidate) => candidate.lat === latitude && candidate.lon === longitude,
+  );
+  const cityName = city
+    ? isNepali
+      ? city.nameNe
+      : city.name
+    : isNepali
+      ? "स्थान"
+      : "Location";
+
+  return `${cityName} (${latitude}, ${longitude})`;
+}
+
+function getDashaIcon(planet: string) {
+  const iconProps = {
+    size: 32,
+    color: "currentColor",
+    weight: "regular" as const,
+  };
+
+  switch (planet) {
+    case "Sun":
+      return <SunIcon {...iconProps} />;
+    case "Moon":
+      return <MoonIcon {...iconProps} />;
+    case "Mars":
+      return <GenderMaleIcon {...iconProps} />;
+    case "Mercury":
+      return <AsclepiusIcon {...iconProps} />;
+    case "Jupiter":
+      return <HugeiconsIcon icon={JupiterIcon} {...iconProps} />;
+    case "Saturn":
+      return <HugeiconsIcon icon={Saturn02Icon} {...iconProps} />;
+    case "Venus":
+      return <HugeiconsIcon icon={VenusIcon} {...iconProps} />;
+    case "Rahu":
+      return <HugeiconsIcon icon={Moon01Icon} {...iconProps} />;
+    case "Ketu":
+      return <HugeiconsIcon icon={Asteroid02Icon} {...iconProps} />;
+    default:
+      return <AsclepiusIcon {...iconProps} />;
+  }
+}
+
+function DashaItem({
+  icon,
+  title,
+  description,
+  status,
+  statusLabel,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  status: DashaStatus;
+  statusLabel: string;
+}) {
+  return (
+    <div className="flex min-h-16 items-center gap-3 py-2.5">
+      <div className="flex size-8 shrink-0 items-center justify-center text-foreground">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium leading-5 text-card-foreground">
+          {title}
+        </p>
+        <p className="truncate text-sm leading-5 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <Badge variant={getDashaBadgeVariant(status)}>{statusLabel}</Badge>
+    </div>
+  );
+}
+
+type DashaStatus = "passed" | "active" | "upcoming";
+
+function getDashaBadgeVariant(status: DashaStatus) {
+  return status === "active"
+    ? "destructive"
+    : status === "upcoming"
+      ? "outline"
+      : "secondary";
+}
+
+function getDashaStatus(period: DashaPeriod, today: Date): DashaStatus {
+  const startDate = new Date(`${period.startDate}T00:00:00`);
+  const endDate = new Date(`${period.endDate}T00:00:00`);
+
+  if (today < startDate) return "upcoming";
+  if (today >= endDate) return "passed";
+  return "active";
+}
+
+function getDashaStatusLabel(status: DashaStatus, isNepali: boolean) {
+  if (isNepali) {
+    return status === "active"
+      ? "हाल"
+      : status === "upcoming"
+        ? "आगामी"
+        : "समाप्त";
+  }
+
+  return status[0].toUpperCase() + status.slice(1);
+}
+
+function InsightItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex min-h-26 gap-3 py-2.5">
+      <div className="flex size-8 shrink-0 items-center justify-center text-primary">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium leading-5 text-card-foreground">
+          {title}
+        </p>
+        <p className="mt-1 text-sm leading-5 text-muted-foreground">
+          {description}
+        </p>
       </div>
     </div>
   );

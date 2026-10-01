@@ -82,6 +82,11 @@ export interface DoshaAnalysis {
 export interface CompleteBirthChartReport {
   birthDetails: {
     gregorianDate: string;
+    nepaliDate: {
+      year: number;
+      month: number;
+      day: number;
+    };
     latitude: number;
     longitude: number;
     ayanamshaDeg: string;
@@ -543,6 +548,7 @@ export async function generateFullBirthChart(
   gregorianDate: Date,
   latitude: number,
   longitude: number,
+  nepaliDate: { year: number; month: number; day: number },
 ): Promise<CompleteBirthChartReport> {
   const swe = new SwissEph();
   await swe.initSwissEph();
@@ -795,6 +801,7 @@ export async function generateFullBirthChart(
     return {
       birthDetails: {
         gregorianDate: gregorianDate.toISOString(),
+        nepaliDate,
         latitude,
         longitude,
         ayanamshaDeg: toDMS(ayanamsha),

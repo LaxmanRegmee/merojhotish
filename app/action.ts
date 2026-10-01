@@ -42,7 +42,11 @@ export async function generateKundaliAction(formData: FormData) {
   const utcDate = new Date(utcTimestamp);
 
   // Compute Sidereal Kundali
-  const chartData = await generateFullBirthChart(utcDate, lat, lon);
+  const chartData = await generateFullBirthChart(utcDate, lat, lon, {
+    year: bsYear,
+    month: bsMonth,
+    day: bsDay,
+  });
 
   if (!chartData.lagna || !chartData.panchang || !chartData.avakahada) {
     throw new Error("The birth chart response is incomplete.");

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemma-4-31b-it",
+        model: "nvidia/nemotron-3-ultra-550b-a55b",
         messages: [
           { role: "system", content: buildAstrologySummaryPrompt(reportData) },
           ...messages,

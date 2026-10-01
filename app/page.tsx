@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CircleHalfTiltIcon, CakeIcon } from "@phosphor-icons/react";
+import Image from "next/image";
+import { CakeIcon } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
+import logo from "@/lib/logo.png";
 import { Button } from "@/components/ui/button";
 import KundaliForm from "@/components/KundaliForm";
 import KundaliChartsView from "@/components/KundaliChartsView";
@@ -47,14 +49,7 @@ export default function Home() {
       lang={language === "np" ? "ne" : "en"}
     >
       <header className="flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <CircleHalfTiltIcon weight="regular" size={24} aria-hidden="true" />
-          </div>
-          <span className="text-[24px] font-semibold tracking-tight">
-            MeroJyotish
-          </span>
-        </div>
+        <Image src={logo} alt="MeroJyotish" priority className="h-auto w-31" />
         <LanguageSwitcher language={language} onLanguageChange={setLanguage} />
       </header>
 
