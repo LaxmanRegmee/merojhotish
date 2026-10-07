@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpIcon, SpinnerIcon } from "@phosphor-icons/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Bubble, BubbleContent } from "./ui/bubble";
 
 interface Message {
@@ -57,6 +59,8 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
   const [analyzing, setAnalyzing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const assistantContentRef = useRef("");
+  const submittingRef = useRef(false);
   const userHasScrolledRef = useRef(false);
 
   const isNepali = language === "np";
@@ -94,14 +98,18 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
 
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
-    handleSubmit(new Event("submit") as unknown as React.FormEvent);
+    void handleSubmit(
+      new Event("submit") as unknown as React.FormEvent,
+      suggestion,
+    );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, messageOverride?: string) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    const userMessage = (messageOverride ?? input).trim();
+    if (!userMessage || loading || submittingRef.current) return;
+    submittingRef.current = true;
 
-    const userMessage = input;
     setInput("");
     setError(null);
     setShowSuggestions(false);
@@ -116,6 +124,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
     setMessages((prev) => [...prev, newUserMessage]);
     setLoading(true);
     setAnalyzing(true);
+    assistantContentRef.current = "";
 
     try {
       const res = await fetch("/api/chat", {
@@ -127,12 +136,21 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
             content: m.content,
           })),
           reportData,
+          language,
         }),
       });
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`API Error: ${errorText}`);
+        let errorMessage = errorText;
+        try {
+          const errorPayload = JSON.parse(errorText);
+          errorMessage =
+            errorPayload.error || errorPayload.message || errorText;
+        } catch {
+          // Keep the raw response when the API did not return JSON.
+        }
+        throw new Error(`API Error: ${errorMessage}`);
       }
 
       const reader = res.body?.getReader();
@@ -140,6 +158,34 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
 
       const decoder = new TextDecoder();
       const assistantMessageId = generateId();
+      let pending = "";
+
+      const processEvent = (line: string) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === "data: [DONE]") return;
+        if (!trimmed.startsWith("data: ")) return;
+
+        const event = JSON.parse(trimmed.slice(6)) as {
+          content?: string;
+          error?: string;
+        };
+
+        if (event.error) throw new Error(event.error);
+        if (event.content) {
+          assistantContentRef.current += event.content;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? {
+                    ...m,
+                    content: assistantContentRef.current,
+                    isStreaming: true,
+                  }
+                : m,
+            ),
+          );
+        }
+      };
 
       // Add empty assistant message with streaming flag
       setMessages((prev) => [
@@ -152,44 +198,18 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         },
       ]);
 
-      const assistantContentRef = useRef("");
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed || trimmed === "data: [DONE]") continue;
-
-          if (trimmed.startsWith("data: ")) {
-            try {
-              const json = JSON.parse(trimmed.slice(6));
-              const content = json.choices?.[0]?.delta?.content;
-              if (content) {
-                assistantContentRef.current =
-                  assistantContentRef.current + content;
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantMessageId
-                      ? {
-                          ...m,
-                          content: assistantContentRef.current,
-                          isStreaming: true,
-                        }
-                      : m,
-                  ),
-                );
-              }
-            } catch {
-              // Ignore parsing errors for partial chunks
-            }
-          }
-        }
+        pending += decoder.decode(value, { stream: true });
+        const lines = pending.split("\n");
+        pending = lines.pop() ?? "";
+        lines.forEach(processEvent);
       }
+
+      pending += decoder.decode();
+      if (pending) processEvent(pending);
 
       // Mark streaming as complete
       setMessages((prev) =>
@@ -206,17 +226,21 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         prev.filter((m) => m.content !== "" || m.role === "user"),
       );
     } finally {
+      submittingRef.current = false;
       setLoading(false);
       setAnalyzing(false);
     }
   };
 
   return (
-    <section id="ai-chat" className="w-full md:px-8 md:py-8 ">
-      <Card className="h-[calc(100vh-200px)] border-0! shadow-none! flex flex-col overflow-hidden">
+    <section
+      id="ai-chat"
+      className="w-full min-h-172 h-full gap-6 md:px-8 md:py-8 "
+    >
+      <Card className="h-[calc(100vh-100px)] border-0! shadow-none! flex flex-col overflow-hidden">
         {/* Chat Header */}
         <div className=" shrink-0">
-          <h2 className="text-2xl font-medium leading-8 text-foreground tracking-normal">
+          <h2 className="text-2xl px-6 pb-6 font-medium leading-8 text-foreground tracking-normal">
             {isNepali ? "च्याट" : "Chat"}
           </h2>
         </div>
@@ -225,7 +249,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         <div
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto gap-6 py-5 px-5 flex flex-col"
+          className="flex-1 overflow-y-auto h-full gap-6 py-5 px-5 flex flex-col"
           role="log"
           aria-live="polite"
           aria-label={isNepali ? "च्याट सन्देशहरू" : "Chat messages"}
@@ -236,7 +260,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
               {/* Spacer pushes suggestions to bottom */}
               <div className="flex-1" />
               <div className="flex flex-col gap-2.5 items-end w-full">
-                {defaultSuggestions.map((suggestion, index) => (
+                {defaultSuggestions.map((suggestion) => (
                   <div
                     key={suggestion}
                     className="w-full flex justify-end"
@@ -260,14 +284,22 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
           {messages.map((message) => (
             <Bubble
               key={message.id}
-              variant={message.role === "user" ? "default" : "secondary"} // also fix: user=default, assistant=secondary
+              variant={message.role === "user" ? "secondary" : "ghost"} // also fix: user=default, assistant=secondary
               align={message.role === "user" ? "end" : "start"}
               className="w-fit max-w-[80%]"
             >
               <BubbleContent className="p-3 rounded-3xl">
-                <p className="text-sm leading-5 whitespace-pre-wrap">
-                  {message.content}
-                </p>
+                {message.role === "assistant" ? (
+                  <div className="text-sm leading-6 [&>p]:mb-3 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_h1]:mb-3 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-semibold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_hr]:my-4 [&_hr]:border-border">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm leading-5 whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                )}
               </BubbleContent>
             </Bubble>
           ))}
@@ -322,8 +354,8 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
               align="start"
               className="w-fit max-w-[80%]"
             >
-              <BubbleContent className="p-3 rounded-3xl">
-                <p className="text-sm">{error}</p>
+              <BubbleContent className="group/bubble relative flex min-w-0 flex-col gap-1 group-data-[align=end]/message:self-end data-[align=end]:self-end data-[variant=ghost]:max-w-full aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3! bg-(--destructive-subtle) text-(--text-destructive) [a]:hover:bg-[var(--destructive-subtle)">
+                <p className="text-sm leading-5">{error}</p>
               </BubbleContent>
             </Bubble>
           )}
@@ -343,7 +375,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={isNepali ? "प्रश्न गर्नुहोस्..." : "Ask chat..."}
-                  className="w-full border-0! bg-transparent! text-sm leading-5 text-foreground placeholder:text-muted-foreground font-['Noto_Sans_Devanagari']"
+                  className="w-full border-0! bg-transparent! text-sm! leading-5 text-foreground placeholder:text-muted-foreground font-['Noto_Sans_Devanagari']"
                   disabled={loading}
                   aria-label={
                     isNepali

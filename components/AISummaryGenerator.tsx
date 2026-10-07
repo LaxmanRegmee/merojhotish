@@ -65,14 +65,14 @@ export default function AISummaryGenerator({
 
   return (
     <div className="h-full z-2 relative flex flex-col items-center justify-center">
-      <div className="w-full max-w-md mx-auto">
-        <Card className="w-full">
-          <CardContent className="p-8">
+      <div className="w-full mx-auto">
+        <Card className="mx-auto h-full justify-center rounded-2xl items-center">
+          <CardContent className="p-6 justify-center items-center w-fit">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-foreground mb-2">
                 {isNepali ? "रिपोर्ट सारांश" : "Report Summary"}
               </h3>
-              <p className="text-muted-foreground text-sm mb-6">
+              <p className="text-muted-foreground text-lg mb-6">
                 {isNepali
                   ? "तपाईंको जन्म कुण्डलीको आधारमा AI द्वारा तयार पारिएको विस्तृत सारांश प्राप्त गर्नुहोस्।"
                   : "Generate detailed summary of your birth chart"}
@@ -81,7 +81,7 @@ export default function AISummaryGenerator({
               <Button
                 onClick={generateSummary}
                 disabled={loading}
-                className="w-full h-12 text-base"
+                className="w-fit rounded-2xl px-2.5 h-12 text-base"
                 variant="default"
                 size="lg"
               >
@@ -111,7 +111,7 @@ export default function AISummaryGenerator({
             )}
 
             {summary && (
-              <div className="mt-6 p-5 bg-muted/50 rounded-lg text-foreground whitespace-pre-wrap leading-relaxed text-sm border border-border max-h-96 overflow-y-auto">
+              <div className="mt-6 text-foreground whitespace-pre-wrap leading-relaxed text-sm h-[calc(100vh-100px)]  overflow-y-auto">
                 {summary}
               </div>
             )}

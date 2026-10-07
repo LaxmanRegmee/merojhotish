@@ -18,7 +18,7 @@ export default function AISummarySection({
 
   return (
     <section id="ai-summary">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         {/* Left Panel - AI Summary Generator */}
         <div className="relative justify-content justify-center  border-r border-border md:px-8 md:py-8">
           <AISummaryGenerator reportData={reportData} language={language} />
@@ -36,7 +36,7 @@ export default function AISummarySection({
         </div>
 
         {/* Right Panel - AI Chat */}
-        <div>
+        <div className="h-full min-h-172">
           <AIChat reportData={reportData} language={language} />
         </div>
       </div>

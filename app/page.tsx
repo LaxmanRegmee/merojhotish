@@ -67,8 +67,8 @@ export default function Home() {
             </h1>
             <p className="mt-4 w-auto px-15 text-lg leading-7 text-muted-foreground">
               {isNepali
-                ? "तपाईंको विक्रम संवत् जन्म विवरणबाट सटीक उत्तर भारतीय लग्न कुण्डली, नक्षत्रीय ग्रह स्थिति र पढ्न सजिलो पञ्चाङ्ग सारांश तयार गर्नुहोस्।"
-                : "Generate a precise North Indian lagna kundali from your Bikram Sambat birth details, with sidereal planetary positions and a readable panchang summary."}
+                ? "तपाईंको विक्रम संवत् जन्म विवरणबाट सटीक उत्तर भारतीय लग्न कुण्डली,\nनक्षत्रीय ग्रह स्थिति र पढ्न सजिलो\nपञ्चाङ्ग सारांश तयार गर्नुहोस्।"
+                : "Generate a precise North Indian lagna kundali from your Bikram Sambat birth details,\nwith sidereal planetary positions and a readable\npanchang summary."}
             </p>
             <Button
               variant="default"
@@ -95,8 +95,8 @@ export default function Home() {
             <KundaliReportLayout language={language}>
               <div className="report-enter w-auto flex flex-col">
                 <section id="charts" className="scroll-mt-6">
-                  <div className="border-b border-border px-6 py-16 md:px-16 md:pr-80">
-                    <p className="text-2xl font-medium leading-8 text-foreground">
+                  <div className="border-b border-border pl-16 pr-32 py-16 ">
+                    <p className=" font-medium text-2xl text-foreground">
                       {isNepali
                         ? "यो चार्टले तपाईंको जन्म समयमा आकाशीय अवस्थाको सटीक नक्सा प्रस्तुत गर्दछ।"
                         : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
