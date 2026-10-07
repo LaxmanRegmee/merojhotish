@@ -11,7 +11,7 @@ import KundaliChartsView from "@/components/KundaliChartsView";
 import FullChartDetails from "@/components/FullChartDetails";
 import LanguageSwitcher, { type Language } from "@/components/LanguageSwitcher";
 import KundaliReportLayout from "@/components/KundaliReportLayout";
-import ReportSummary from "@/components/ReportSummary";
+import AISummarySection from "@/components/AISummarySection";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
@@ -107,9 +107,12 @@ export default function Home() {
 
                 <FullChartDetails report={chartData} language={language} />
 
-                {/* AI Summary inside Report Layout */}
-                <section className="px-6 py-8 border-t border-border md:px-16">
-                  <ReportSummary reportData={chartData} language={language} />
+                {/* AI Summary Section */}
+                <section className=" border-t border-border">
+                  <AISummarySection
+                    reportData={chartData}
+                    language={language}
+                  />
                 </section>
               </div>
             </KundaliReportLayout>

@@ -4,11 +4,6 @@
 			"url": "http://127.0.0.1:3845/mcp",
 			"type": "http"
 		},
-		"paper": {
-			"type": "stdio",
-			"command": "/Users/laxman/.paper/bin/paper",
-			"args": ["mcp"]
-		}
 	},
 	"inputs": []
 }

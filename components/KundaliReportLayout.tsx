@@ -16,6 +16,8 @@ const sections = [
   { id: "avakahada", label: "Avakahada chart" },
   { id: "planets", label: "Planetary positions" },
   { id: "dasha", label: "Dosh and Dashas" },
+  { id: "ai-summary", label: "AI Summary" },
+  { id: "ai-chat", label: "AI Chat" },
 ];
 
 export default function KundaliReportLayout({
