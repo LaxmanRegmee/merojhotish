@@ -18,11 +18,23 @@ export const runtime = "nodejs";
 export const metadata: Metadata = {
   metadataBase: new URL("https://merojyotish.vercel.app"),
   title: {
-    default: "MeroJyotish | Birth Chart & Astrology",
+    default: "MeroJyotish | Online Kundali, Birth Chart & Jyotish Astrology",
     template: "%s | MeroJyotish",
   },
   description:
-    "Generate a birth chart, view planetary positions, and explore astrology insights in Nepali and English.",
+    "Generate your kundali online, view birth chart details, explore jyotish astrology, and check Panchang insights in Nepali and English.",
+  keywords: [
+    "kundali",
+    "birth chart",
+    "jyotish",
+    "astrology",
+    "panchang",
+    "horoscope",
+    "kundali matching",
+    "online kundali",
+    "astrology in Nepal",
+    "Nepali astrology",
+  ],
   alternates: {
     canonical: "/",
     languages: {
@@ -31,17 +43,21 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "MeroJyotish | Birth Chart & Astrology",
+    title: "MeroJyotish | Online Kundali, Birth Chart & Jyotish Astrology",
     description:
-      "A Kundali and astrology insight app for Nepali and English users.",
+      "Generate your kundali, view planetary positions, and explore jyotish astrology insights in Nepali and English.",
     url: "https://merojyotish.vercel.app",
     siteName: "MeroJyotish",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MeroJyotish",
-    description: "Birth chart and astrology insights.",
+    title: "MeroJyotish | Online Kundali, Birth Chart & Jyotish Astrology",
+    description:
+      "Generate your kundali online, view birth chart details, and explore jyotish insights in Nepali and English.",
+  },
+  verification: {
+    google: "3c8-AeBBX4hmdH4tndYUPKQGjdWXGZvwfyq1pV7j2UA",
   },
 };
 
