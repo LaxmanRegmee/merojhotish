@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { chartData, language } = await req.json();
+    const { chartData } = await req.json();
 
     if (!chartData) {
       return NextResponse.json(
@@ -63,9 +63,14 @@ export async function POST(req: Request) {
       data.choices?.[0]?.message?.content || "No summary generated.";
 
     return NextResponse.json({ summary });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to generate summary." },
+      {
+        error:
+          error instanceof Error && error.message
+            ? error.message
+            : "Failed to generate summary.",
+      },
       { status: 500 },
     );
   }

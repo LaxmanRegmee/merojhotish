@@ -15,16 +15,6 @@ import {
   Moon01Icon,
 } from "@hugeicons/core-free-icons";
 
-function App() {
-  return (
-    <HugeiconsIcon
-      icon={Saturn02Icon}
-      size={24}
-      color="currentColor"
-      strokeWidth={1.5}
-    />
-  );
-}
 import AvakahadaChakra from "@/components/AvakahadaChakra";
 import { MAJOR_NEPALI_CITIES, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
 import type {

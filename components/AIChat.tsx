@@ -5,12 +5,13 @@ import type { Language } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUpIcon, SpinnerIcon } from "@phosphor-icons/react";
+import { ArrowUpIcon } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Bubble, BubbleContent } from "./ui/bubble";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import loadingAnimation from "@/components/animations/loadinganimation.json";
+import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface Message {
   id: string;
@@ -21,29 +22,8 @@ interface Message {
 }
 
 interface AIChatProps {
-  reportData: Record<string, unknown>;
+  reportData: CompleteBirthChartReport;
   language?: Language;
-}
-
-// Spinner component for analyzing state
-function Spinner({ className = "" }: { className?: string }) {
-  const [rotate, setRotate] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRotate((prev) => (prev + 10) % 360);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <SpinnerIcon
-      size={16}
-      weight="bold"
-      className={`${className} transition-transform duration-50 linear`}
-      style={{ transform: `rotate(${rotate}deg)` }}
-    />
-  );
 }
 
 // Generate unique ID without using Date.now in render
@@ -251,7 +231,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         <div
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto h-full gap-6 py-5 px-5 flex flex-col"
+          className="scroll-fade no-scrollbar flex-1 overflow-y-auto h-full gap-6 py-5 px-5 flex flex-col"
           role="log"
           aria-live="polite"
           aria-label={isNepali ? "च्याट सन्देशहरू" : "Chat messages"}

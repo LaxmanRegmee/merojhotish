@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface AISummaryGeneratorProps {
-  reportData: any;
+  reportData: CompleteBirthChartReport;
   language?: Language;
 }
 
@@ -58,8 +59,12 @@ export default function AISummaryGenerator({
       }
 
       setSummary(data.summary);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "An unexpected error occurred.",
+      );
     } finally {
       setLoading(false);
     }
@@ -113,7 +118,7 @@ export default function AISummaryGenerator({
             )}
 
             {summary && (
-              <div className="mt-6 text-foreground leading-relaxed text-sm h-[calc(100vh-100px)]  overflow-y-auto">
+              <div className="scroll-fade no-scrollbar mt-6 text-foreground leading-relaxed text-sm h-[calc(100vh-100px)]  overflow-y-auto">
                 <div className="[&>p]:mb-3 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_h1]:mb-3 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-semibold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_hr]:my-4 [&_hr]:border-border">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {summary}

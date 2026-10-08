@@ -4,9 +4,10 @@ import type { Language } from "@/components/LanguageSwitcher";
 import AISummaryGenerator from "@/components/AISummaryGenerator";
 import AIChat from "@/components/AIChat";
 import { Circle, FlutedGlass, Shader } from "shaders/react";
+import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface AISummarySectionProps {
-  reportData: any;
+  reportData: CompleteBirthChartReport;
   language?: Language;
 }
 
@@ -14,8 +15,6 @@ export default function AISummarySection({
   reportData,
   language = "en",
 }: AISummarySectionProps) {
-  const isNepali = language === "np";
-
   return (
     <section id="ai-summary">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">

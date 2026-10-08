@@ -35,7 +35,9 @@ export default function NorthIndianKundali({
     <div className="p-3 text-primary">
       <div className="mb-2 text-center">
         <h3 className="text-lg font-regular text-foreground">{title}</h3>
-    
+        {subtitle && (
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        )}
       </div>
 
       <div className="mx-auto bg-card aspect-square w-full max-w-105">

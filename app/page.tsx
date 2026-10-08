@@ -12,6 +12,7 @@ import FullChartDetails from "@/components/FullChartDetails";
 import LanguageSwitcher, { type Language } from "@/components/LanguageSwitcher";
 import KundaliReportLayout from "@/components/KundaliReportLayout";
 import AISummarySection from "@/components/AISummarySection";
+import HeaderNavigation from "@/components/HeaderNavigation";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
@@ -48,8 +49,9 @@ export default function Home() {
       className="min-h-screen bg-background font-sans text-foreground"
       lang={language === "np" ? "ne" : "en"}
     >
-      <header className="flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
+      <header className="relative flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
         <Image src={logo} alt="MeroJyotish" priority className="h-auto w-31" />
+        <HeaderNavigation />
         <LanguageSwitcher language={language} onLanguageChange={setLanguage} />
       </header>
 
