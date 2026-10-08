@@ -15,6 +15,7 @@
     "@base-ui/react": "^1.8.0",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
+    "@lottiefiles/dotlottie-react": "^0.20.0",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-popover": "^1.1.23",
     "@radix-ui/react-select": "^2.3.7",
@@ -27,11 +28,8 @@
     "cn": "^0.4.0",
     "install": "^0.13.0",
     "lucide-react": "^1.47.0",
-    "next": "16.3.5",
+    "next": "16.4.0",
     "npm": "^12.1.0",
-    "openai": "^7.23.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "shadcn": "^4.21.0",
@@ -47,11 +45,12 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.3.5",
+    "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
   "allowScripts": {
-    "shaders@4.0.0": true
+    "shaders@4.0.0": true,
+    "lottie-react@3.1.2": true
   }
 }

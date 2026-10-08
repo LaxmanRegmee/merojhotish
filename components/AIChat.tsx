@@ -9,6 +9,8 @@ import { ArrowUpIcon, SpinnerIcon } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Bubble, BubbleContent } from "./ui/bubble";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import loadingAnimation from "@/components/animations/loadinganimation.json";
 
 interface Message {
   id: string;
@@ -307,16 +309,16 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
           {analyzing && (
             // Analyzing state marker (Figma 192-1847)
             <div className="flex justify-start flex-col gap-2 items-start w-full">
-              <div className="flex gap-2 items-center">
-                <div className="flex h-4 items-center">
-                  <Spinner className="text-muted-foreground" />
-                </div>
-                <div className="flex items-center">
-                  <p className="text-sm leading-5 text-muted-foreground whitespace-pre">
-                    {isNepali
-                      ? "अनुरोध विश्लेषण गर्दै..."
-                      : "Analyzing request"}
-                  </p>
+              <div className="flex items-center gap-1">
+                <div className="h-18 w-18">
+                  <DotLottieReact
+                    data={JSON.stringify(loadingAnimation)}
+                    loop
+                    autoplay
+                    speed={1}
+                    mode="bounce"
+                    className="h-full w-full"
+                  />
                 </div>
               </div>
             </div>
