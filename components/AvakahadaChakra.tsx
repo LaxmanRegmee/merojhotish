@@ -55,7 +55,7 @@ export default function AvakahadaChakra({
   ];
 
   return (
-    <div className="mx-auto aspect-square w-full">
+    <div className="mx-auto aspect-square w-90 md:w-full">
       <svg
         viewBox="-45 0 490 476"
         className="h-full w-full overflow-visible select-none"

@@ -102,9 +102,9 @@ export default function FullChartDetails({
 
       <Card
         id="avakahada"
-        className="scroll-mt-6 py-16 px-48 w-auto h-auto rounded-none bg-gray-50"
+        className="scroll-mt-6 py-12 px-4 md:px-16 md:py-16 w-auto h-auto rounded-none bg-gray-50"
       >
-        <CardContent className="w-auto h-auto p-0">
+        <CardContent className="w-auto min-h-52 md:h-auto p-0">
           <AvakahadaChakra data={report.avakahada} language={language} />
         </CardContent>
       </Card>
@@ -188,7 +188,7 @@ export default function FullChartDetails({
       <div className="grid grid-cols-1 border-t border-border lg:grid-cols-2">
         <section
           id="dasha"
-          className="scroll-mt-6 border-b border-border px-6 py-10 sm:px-10 lg:border-b-0 lg:border-r lg:px-16 lg:py-16"
+          className="scroll-mt-6 border-b border-border px-4 py-12 sm:px-10 lg:border-b-0 lg:border-r lg:px-16 lg:py-16"
         >
           <h2 className="text-base font-normal leading-6 text-muted-foreground">
             {isNepali ? "विंशोत्तरी महादशा" : "Vimshottari dasha"}
@@ -216,7 +216,7 @@ export default function FullChartDetails({
 
         <section
           id="doshas"
-          className="scroll-mt-6 px-6 py-10 sm:px-10 lg:px-16 lg:py-16"
+          className="scroll-mt-6 px-4 py-12 sm:px-10 lg:px-16 lg:py-16"
         >
           <h2 className="text-base font-normal leading-6 text-muted-foreground">
             {isNepali ? "दोष एवं योग" : "Doshas and yogas"}

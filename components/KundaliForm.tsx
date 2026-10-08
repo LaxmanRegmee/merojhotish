@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { CircleNotch, Clock } from "@phosphor-icons/react";
+import { CircleNotchIcon, ClockIcon } from "@phosphor-icons/react";
 import { MAJOR_NEPALI_CITIES } from "@/lib/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Language } from "@/components/LanguageSwitcher";
+import { Clock } from "lucide-react";
 
 interface FormProps {
   onSubmit: (formData: FormData) => void;
@@ -39,8 +40,8 @@ export default function KundaliForm({
   const [city, setCity] = useState("");
 
   return (
-    <form action={onSubmit} className="flex flex-col pt-16 gap-6">
-      <Card className="mx-auto w-full max-w-96.75 overflow-visible rounded-xl border border-border">
+    <form action={onSubmit} className="flex flex-col pt-8 md:pt-16 gap-6">
+      <Card className="mx-auto w-full max-w-89 md:max-w-96.75 overflow-visible rounded-xl border border-border">
         <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
           <CardTitle className="w-full text-sm leading-6 font-semibold">
             {isNepali ? "जन्म विवरण" : "Birth Details"}
@@ -115,7 +116,7 @@ export default function KundaliForm({
           >
             {loading ? (
               <>
-                <CircleNotch
+                <CircleNotchIcon
                   className="animate-spin"
                   size={14}
                   aria-hidden="true"
@@ -172,7 +173,7 @@ function TimePicker({
           className="ui-picker-trigger h-8 w-full justify-between rounded-lg px-2.5 text-left text-sm font-normal"
         >
           {displayHour}:{String(minuteValue).padStart(2, "0")} {meridiemLabel}
-          <Clock aria-hidden="true" />
+          <ClockIcon aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-32.75 p-2">

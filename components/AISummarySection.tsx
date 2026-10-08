@@ -19,7 +19,7 @@ export default function AISummarySection({
     <section id="ai-summary">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         {/* Left Panel - AI Summary Generator */}
-        <div className="relative justify-content justify-center  border-r border-border md:px-8 md:py-8">
+        <div className="relative justify-content justify-center  border-r border-border px-6 py-12  min-h-172 md:px-8 md:py-8">
           <AISummaryGenerator reportData={reportData} language={language} />
           <Shader className="absolute w-full h-full inset-0 z-0">
             <FlutedGlass

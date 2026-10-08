@@ -346,7 +346,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         </div>
 
         {/* Input Area - matching Figma design exactly */}
-        <div className="flex gap-2 items-center justify-end px-2.5 py-2">
+        <div className="flex gap-2 items-center justify-end px-4 pb-6 md:px-2.5 md:py-2">
           <div className="bg-muted rounded-[22px] w-full">
             <form
               onSubmit={handleSubmit}
