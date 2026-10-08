@@ -50,7 +50,12 @@ export default function Home() {
       lang={language === "np" ? "ne" : "en"}
     >
       <header className="relative flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
-        <Image src={logo} alt="MeroJyotish" priority className="h-auto w-24 md:w-32" />
+        <Image
+          src={logo}
+          alt="MeroJyotish"
+          priority
+          className="h-auto w-24 md:w-32"
+        />
         <HeaderNavigation />
         <LanguageSwitcher language={language} onLanguageChange={setLanguage} />
       </header>
@@ -97,8 +102,8 @@ export default function Home() {
             <KundaliReportLayout language={language}>
               <div className="report-enter w-auto flex flex-col">
                 <section id="charts" className="scroll-mt-6">
-                  <div className="border-b border-border px-4 md:pl-16 md:pr-32 py-12 ">
-                    <p className=" font-medium text-2xl text-foreground">
+                  <div className="border-b border-border px-4 md:pl-16 md:pr-16 md:w-full  py-12 ">
+                    <p className=" font-medium text-2xl md:max-w-150 md:w-full text-foreground">
                       {isNepali
                         ? "यो चार्टले तपाईंको जन्म समयमा आकाशीय अवस्थाको सटीक नक्सा प्रस्तुत गर्दछ।"
                         : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
