@@ -73,8 +73,8 @@ export default function AISummaryGenerator({
   return (
     <div className="h-full z-2 relative flex flex-col items-center justify-center">
       <div className="w-full mx-auto">
-        <Card className="mx-auto h-full justify-center  w-fit md:max-w-70.75 rounded-2xl items-center">
-          <CardContent className="p-6 py-6 justify-center items-center w-fit md:w-full">
+        <Card className="mx-auto h-full justify-center  w-fill md:max-w-fill rounded-2xl items-center">
+          <CardContent className="p-6 py-6 justify-center items-center w-fill md:w-full">
             <div className="text-center">
               <h3 className="text-2xl font-semibold w-full text-left text-foreground mb-2">
                 {isNepali ? "रिपोर्ट सारांश" : "Report Summary"}
