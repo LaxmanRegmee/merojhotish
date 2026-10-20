@@ -68,7 +68,7 @@ export default function Home() {
               {isNepali ? "जन्म कुण्डली स्टुडियो" : "Birth chart studio"}
             </div>
             <h1 className="max-w-154.75 text-5xl font-semibold leading-13 tracking-tight text-primary md:text-6xl md:leading-[1.02]">
-              {isNepali ? "आकाशको नक्सा," : "Map of the sky,"}
+              {isNepali ? "आकाशको नक्सा," : "Subashhhhhhhhhh,"}
               <br />
               {isNepali ? "तपाईंको जीवनको कथा!" : "Story of your life!"}
             </h1>
