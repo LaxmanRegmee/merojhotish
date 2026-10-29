@@ -21,26 +21,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Language } from "@/components/LanguageSwitcher";
-import { Clock } from "lucide-react";
-
 interface FormProps {
-  onSubmit: (formData: FormData) => void;
+  onSubmit?: (formData: FormData) => void | Promise<void>;
   loading: boolean;
   language: Language;
+  personId?: "1" | "2";
+  standalone?: boolean;
 }
 
 export default function KundaliForm({
   onSubmit,
   loading,
   language,
+  personId = "1",
+  standalone = true,
 }: FormProps) {
   const isNepali = language === "np";
   const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 0 });
   const [birthTime, setBirthTime] = useState("21:23");
   const [city, setCity] = useState("");
 
-  return (
-    <form action={onSubmit} className="flex flex-col pt-8 md:pt-16 gap-6">
+  // Generate unique field names based on personId
+  const fieldPrefix = personId === "1" ? "" : "2";
+
+  // When not standalone (used in compatibility page), don't use form element
+  // The parent form will handle submission
+  const formProps = standalone && onSubmit ? { action: onSubmit } : {};
+
+  const renderFormContent = () => (
+    <>
       <Card className="mx-auto w-full max-w-89 md:max-w-96.75 overflow-visible rounded-xl border border-border">
         <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
           <CardTitle className="w-full text-sm leading-6 font-semibold">
@@ -55,7 +64,7 @@ export default function KundaliForm({
 
         <CardContent className="flex flex-col gap-3 px-4 py-3">
           <div className="flex h-15 flex-col gap-2">
-            <Label htmlFor="bsYear">
+            <Label htmlFor={`bsYear${fieldPrefix}`}>
               {isNepali ? "जन्म मिति" : "Date of birth"}
             </Label>
             <NepaliDatePicker
@@ -63,17 +72,36 @@ export default function KundaliForm({
               language={language}
               onChange={setBirthDate}
             />
-            <input type="hidden" name="bsYear" value={birthDate.year} />
-            <input type="hidden" name="bsMonth" value={birthDate.month} />
-            <input type="hidden" name="bsDay" value={birthDate.day} />
+            <input
+              type="hidden"
+              name={`bsYear${fieldPrefix}`}
+              value={birthDate.year}
+            />
+            <input
+              type="hidden"
+              name={`bsMonth${fieldPrefix}`}
+              value={birthDate.month}
+            />
+            <input
+              type="hidden"
+              name={`bsDay${fieldPrefix}`}
+              value={birthDate.day}
+            />
           </div>
 
           <div className="flex h-22 flex-col gap-2">
-            <Label htmlFor="city">
+            <Label htmlFor={`city${fieldPrefix}`}>
               {isNepali ? "तपाईं कहाँ जन्मनुभयो?" : "Where were you born?"}
             </Label>
-            <Select name="city" value={city} onValueChange={setCity}>
-              <SelectTrigger id="city" className="h-8 rounded-lg px-2.5">
+            <Select
+              name={`city${fieldPrefix}`}
+              value={city}
+              onValueChange={setCity}
+            >
+              <SelectTrigger
+                id={`city${fieldPrefix}`}
+                className="h-8 rounded-lg px-2.5"
+              >
                 <SelectValue
                   placeholder={
                     isNepali ? "जिल्ला छान्नुहोस्" : "Choose a district"
@@ -96,21 +124,25 @@ export default function KundaliForm({
           </div>
 
           <div className="flex h-15 flex-col gap-2">
-            <Label htmlFor="birthTime">
-              {isNepali ? "जन्म समय सम्झनुहुन्छ?" : "Remember the time?"}
+            <Label htmlFor={`birthTime${fieldPrefix}`}>
+              {isNepali ? "जन्म समय के हो?" : "What time were you born?"}
             </Label>
             <TimePicker
               value={birthTime}
               onChange={setBirthTime}
               language={language}
             />
-            <input type="hidden" name="birthTime" value={birthTime} />
+            <input
+              type="hidden"
+              name={`birthTime${fieldPrefix}`}
+              value={birthTime}
+            />
           </div>
         </CardContent>
 
         <div className="flex h-16 flex-col justify-center gap-3 rounded-b-xl border-t border-t-border bg-muted/60 px-4 py-4">
           <Button
-            type="submit"
+            type={standalone ? "submit" : "button"}
             disabled={loading || !birthDate.day || !city}
             className="h-8 w-full rounded-lg bg-primary text-xs font-medium text-primary-foreground"
           >
@@ -131,7 +163,21 @@ export default function KundaliForm({
           </Button>
         </div>
       </Card>
-    </form>
+    </>
+  );
+
+  if (standalone) {
+    return (
+      <form {...formProps} className="flex flex-col pt-8 md:pt-16 gap-6">
+        {renderFormContent()}
+      </form>
+    );
+  }
+
+  return (
+    <div className="flex flex-col pt-8 md:pt-16 gap-6">
+      {renderFormContent()}
+    </div>
   );
 }
 

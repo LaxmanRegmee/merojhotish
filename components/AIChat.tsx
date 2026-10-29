@@ -1,3 +1,4 @@
+// components/AIChat.tsx
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -11,6 +12,7 @@ import remarkGfm from "remark-gfm";
 import { Bubble, BubbleContent } from "./ui/bubble";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import loadingAnimation from "@/components/animations/loadinganimation.json";
+import DOMPurify from "dompurify";
 import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface Message {
@@ -32,6 +34,50 @@ function generateId(): string {
   return `${Date.now()}-${++idCounter}`;
 }
 
+// Sanitize HTML content to prevent XSS
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p", "br", "strong", "em", "u", "s", "code", "pre",
+      "h1", "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li",
+      "blockquote", "hr",
+      "a", "span", "div",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+    ALLOW_DATA_ATTR: false,
+    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form", "input", "button"],
+    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur"],
+  });
+}
+
+// Custom ReactMarkdown components with sanitization
+const markdownComponents = {
+  a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline hover:no-underline"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+  code: ({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) => {
+    const isInline = !className?.includes("language-");
+    if (isInline) {
+      return <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>;
+    }
+    return <code className={className} {...props}>{children}</code>;
+  },
+  pre: ({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) => (
+    <pre className="bg-muted p-3 rounded overflow-x-auto text-sm" {...props}>
+      {children}
+    </pre>
+  ),
+};
+
 export default function AIChat({ reportData, language = "en" }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -51,8 +97,8 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
   const defaultSuggestions = useMemo(
     () => [
       "What is my career like?",
-      "am i gonna be married in next 5 years?",
-      "what does mangal dosha mean?",
+      "Will I get married in the next 5 years?",
+      "What does Mangal Dosha mean?",
     ],
     [],
   );
@@ -266,14 +312,17 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
           {messages.map((message) => (
             <Bubble
               key={message.id}
-              variant={message.role === "user" ? "secondary" : "ghost"} // also fix: user=default, assistant=secondary
+              variant={message.role === "user" ? "secondary" : "ghost"}
               align={message.role === "user" ? "end" : "start"}
               className="w-fit max-w-[80%]"
             >
               <BubbleContent className="p-3 rounded-3xl">
                 {message.role === "assistant" ? (
                   <div className="text-sm leading-6 [&>p]:mb-3 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_h1]:mb-3 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-semibold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_hr]:my-4 [&_hr]:border-border">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
                       {message.content}
                     </ReactMarkdown>
                   </div>
@@ -356,7 +405,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={isNepali ? "प्रश्न गर्नुहोस्..." : "Ask chat..."}
+                  placeholder={isNepali ? "प्रश्न गर्नुहोस्..." : "Ask about your chart..."}
                   className="w-full border-0! bg-transparent! text-sm! leading-5 text-foreground placeholder:text-muted-foreground font-['Noto_Sans_Devanagari']"
                   disabled={loading}
                   aria-label={

@@ -8,6 +8,11 @@ export function bsToAd(bsYear: number, bsMonth: number, bsDay: number): Date {
   return new Date(Date.UTC(ad.year, ad.month - 1, ad.day));
 }
 
+export function adToBs(adDate: Date): { year: number; month: number; day: number } {
+  const dateStr = adDate.toISOString().split("T")[0]; // YYYY-MM-DD
+  return BikramSambat.toBik(dateStr);
+}
+
 export const NEPALI_MONTHS = [
   "Baishak",
   "Jestha",

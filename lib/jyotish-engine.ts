@@ -56,6 +56,31 @@ export interface DashaPeriod {
   durationYears: number;
 }
 
+// --- DASHAKOOTA (10-FOLD) MARRIAGE COMPATIBILITY INTERFACES ---
+
+export interface DashakootaKoota {
+  name: string;
+  nameNe: string;
+  description: string;
+  descriptionNe: string;
+  maxPoints: number;
+  pointsObtained: number;
+  details: string;
+  detailsNe: string;
+  isCompatible: boolean;
+}
+
+export interface DashakootaResult {
+  kootas: DashakootaKoota[];
+  totalPoints: number;
+  maxTotalPoints: number;
+  percentage: number;
+  verdict: "Excellent" | "Good" | "Average" | "Poor";
+  verdictNe: string;
+  summary: string;
+  summaryNe: string;
+}
+
 export interface PanchangAtBirth {
   tithiName: string;
   tithiNameNe: string;
@@ -878,4 +903,551 @@ export async function generateFullBirthChart(
   } finally {
     swe.close();
   }
+}
+
+// --- DASHAKOOTA (10-FOLD) MARRIAGE COMPATIBILITY CALCULATION ---
+
+/**
+ * Calculates Dashakoota (10-fold) marriage compatibility between two birth charts
+ * Based on traditional South Indian system with 10 kootas
+ */
+export function calculateDashakoota(
+  chart1: CompleteBirthChartReport,
+  chart2: CompleteBirthChartReport,
+  language: "en" | "np" = "en",
+): DashakootaResult {
+  const isNepali = language === "np";
+
+  // Extract Moon data for both charts
+  const moon1 = chart1.planets.find((p) => p.name === "Moon")!;
+  const moon2 = chart2.planets.find((p) => p.name === "Moon")!;
+
+  const nak1 = NAKSHATRAS[moon1.nakshatraIndex];
+  const nak2 = NAKSHATRAS[moon2.nakshatraIndex];
+
+  const rashi1 = RASHIS[moon1.signIndex];
+  const rashi2 = RASHIS[moon2.signIndex];
+
+  const kootas: DashakootaKoota[] = [];
+
+  // 1. DINA KOOTA (Nakshatra distance) - Max 3 points
+  // Distance from boy's nakshatra to girl's nakshatra
+  const dinaDistance = (moon2.nakshatraIndex - moon1.nakshatraIndex + 27) % 27;
+  let dinaPoints = 0;
+  let dinaDetails = "";
+  let dinaDetailsNe = "";
+
+  if (dinaDistance === 0) {
+    dinaPoints = 0;
+    dinaDetails = "Same nakshatra - not favorable";
+    dinaDetailsNe = "एकै नक्षत्र - अनुकूल छैन";
+  } else if (
+    [2, 4, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26].includes(dinaDistance)
+  ) {
+    dinaPoints = 3;
+    dinaDetails = "Favorable nakshatra distance";
+    dinaDetailsNe = "अनुकूल नक्षत्र दूरी";
+  } else {
+    dinaPoints = 1.5;
+    dinaDetails = "Moderately favorable nakshatra distance";
+    dinaDetailsNe = "मध्यम अनुकूल नक्षत्र दूरी";
+  }
+
+  kootas.push({
+    name: "Dina",
+    nameNe: "दिन",
+    description: "Nakshatra distance compatibility",
+    descriptionNe: "नक्षत्र दूरी अनुकूलता",
+    maxPoints: 3,
+    pointsObtained: dinaPoints,
+    details: dinaDetails,
+    detailsNe: dinaDetailsNe,
+    isCompatible: dinaPoints >= 3,
+  });
+
+  // 2. GANA KOOTA (Temperament) - Max 4 points
+  const gana1 = nak1.gana;
+  const gana2 = nak2.gana;
+  let ganaPoints = 0;
+  let ganaDetails = "";
+  let ganaDetailsNe = "";
+
+  if (gana1 === gana2) {
+    ganaPoints = 4;
+    ganaDetails = `Both ${gana1} gana - excellent compatibility`;
+    ganaDetailsNe = `दुवै ${nak1.ganaNe} गण - उत्कृष्ट अनुकूलता`;
+  } else if (
+    (gana1 === "Deva" && gana2 === "Manushya") ||
+    (gana1 === "Manushya" && gana2 === "Deva")
+  ) {
+    ganaPoints = 3;
+    ganaDetails = `${gana1} and ${gana2} gana - good compatibility`;
+    ganaDetailsNe = `${nak1.ganaNe} र ${nak2.ganaNe} गण - राम्रो अनुकूलता`;
+  } else if (
+    (gana1 === "Manushya" && gana2 === "Rakshasa") ||
+    (gana1 === "Rakshasa" && gana2 === "Manushya")
+  ) {
+    ganaPoints = 1;
+    ganaDetails = `${gana1} and ${gana2} gana - moderate compatibility`;
+    ganaDetailsNe = `${nak1.ganaNe} र ${nak2.ganaNe} गण - मध्यम अनुकूलता`;
+  } else {
+    ganaPoints = 0;
+    ganaDetails = `${gana1} and ${gana2} gana - challenging compatibility`;
+    ganaDetailsNe = `${nak1.ganaNe} र ${nak2.ganaNe} गण - चुनौतीपूर्ण अनुकूलता`;
+  }
+
+  kootas.push({
+    name: "Gana",
+    nameNe: "गण",
+    description: "Temperament/nature compatibility",
+    descriptionNe: "स्वभाव/प्रकृति अनुकूलता",
+    maxPoints: 4,
+    pointsObtained: ganaPoints,
+    details: ganaDetails,
+    detailsNe: ganaDetailsNe,
+    isCompatible: ganaPoints >= 3,
+  });
+
+  // 3. YONI KOOTA (Sexual/Physical compatibility) - Max 4 points
+  const yoni1 = nak1.yoni;
+  const yoni2 = nak2.yoni;
+  let yoniPoints = 0;
+  let yoniDetails = "";
+  let yoniDetailsNe = "";
+
+  // Yoni compatibility matrix (simplified)
+  const yoniPairs: Record<string, string[]> = {
+    Horse: ["Horse", "Sheep", "Dog"],
+    Elephant: ["Elephant", "Rat", "Monkey"],
+    Sheep: ["Sheep", "Horse", "Cow"],
+    Serpent: ["Serpent", "Mongoose", "Cat"],
+    Dog: ["Dog", "Horse", "Rabbit"],
+    Cat: ["Cat", "Serpent", "Rat"],
+    Rat: ["Rat", "Elephant", "Cat"],
+    Cow: ["Cow", "Sheep", "Buffalo"],
+    Buffalo: ["Buffalo", "Cow", "Tiger"],
+    Tiger: ["Tiger", "Buffalo", "Deer"],
+    Deer: ["Deer", "Tiger", "Mongoose"],
+    Mongoose: ["Mongoose", "Deer", "Serpent"],
+    Monkey: ["Monkey", "Elephant", "Goat"],
+    Goat: ["Goat", "Monkey", "Sheep"],
+    Lion: ["Lion", "Tiger", "Horse"],
+    Rabbit: ["Rabbit", "Dog", "Cat"],
+  };
+
+  const compatibleYonis = yoniPairs[yoni1] || [];
+  if (yoni1 === yoni2) {
+    yoniPoints = 4;
+    yoniDetails = `Same yoni (${yoni1}) - excellent physical compatibility`;
+    yoniDetailsNe = `एकै योनि (${nak1.yoniNe}) - उत्कृष्ट शारीरिक अनुकूलता`;
+  } else if (compatibleYonis.includes(yoni2)) {
+    yoniPoints = 3;
+    yoniDetails = `${yoni1} and ${yoni2} yoni - good compatibility`;
+    yoniDetailsNe = `${nak1.yoniNe} र ${nak2.yoniNe} योनि - राम्रो अनुकूलता`;
+  } else {
+    yoniPoints = 0;
+    yoniDetails = `${yoni1} and ${yoni2} yoni - challenging compatibility`;
+    yoniDetailsNe = `${nak1.yoniNe} र ${nak2.yoniNe} योनि - चुनौतीपूर्ण अनुकूलता`;
+  }
+
+  kootas.push({
+    name: "Yoni",
+    nameNe: "योनि",
+    description: "Physical/sexual compatibility",
+    descriptionNe: "शारीरिक/यौन अनुकूलता",
+    maxPoints: 4,
+    pointsObtained: yoniPoints,
+    details: yoniDetails,
+    detailsNe: yoniDetailsNe,
+    isCompatible: yoniPoints >= 3,
+  });
+
+  // 4. RASHI KOOTA (Moon sign compatibility) - Max 5 points
+  const rashiDistance = (moon2.signIndex - moon1.signIndex + 12) % 12;
+  let rashiPoints = 0;
+  let rashiDetails = "";
+  let rashiDetailsNe = "";
+
+  // Friendly signs (1, 5, 9 from each other)
+  const friendlyDistances = [1, 5, 9];
+  // Neutral signs (3, 11)
+  const neutralDistances = [3, 11];
+  // Enemy signs (2, 4, 6, 7, 8, 10)
+  const enemyDistances = [2, 4, 6, 7, 8, 10];
+
+  if (rashiDistance === 0) {
+    rashiPoints = 5;
+    rashiDetails = `Same rashi (${rashi1.en}) - excellent emotional compatibility`;
+    rashiDetailsNe = `एकै राशि (${rashi1.ne}) - उत्कृष्ट भावनात्मक अनुकूलता`;
+  } else if (friendlyDistances.includes(rashiDistance)) {
+    rashiPoints = 4;
+    rashiDetails = `Friendly rashi relationship - good compatibility`;
+    rashiDetailsNe = `मैत्रीपूर्ण राशि सम्बन्ध - राम्रो अनुकूलता`;
+  } else if (neutralDistances.includes(rashiDistance)) {
+    rashiPoints = 2;
+    rashiDetails = `Neutral rashi relationship - moderate compatibility`;
+    rashiDetailsNe = `तटस्थ राशि सम्बन्ध - मध्यम अनुकूलता`;
+  } else {
+    rashiPoints = 0;
+    rashiDetails = `Enemy rashi relationship - challenging compatibility`;
+    rashiDetailsNe = `शत्रु राशि सम्बन्ध - चुनौतीपूर्ण अनुकूलता`;
+  }
+
+  kootas.push({
+    name: "Rashi",
+    nameNe: "राशि",
+    description: "Moon sign emotional compatibility",
+    descriptionNe: "चन्द्र राशि भावनात्मक अनुकूलता",
+    maxPoints: 5,
+    pointsObtained: rashiPoints,
+    details: rashiDetails,
+    detailsNe: rashiDetailsNe,
+    isCompatible: rashiPoints >= 3,
+  });
+
+  // 5. RASYADHIPATI KOOTA (Moon sign lord friendship) - Max 5 points
+  const lord1 = rashi1.lord;
+  const lord2 = rashi2.lord;
+  let rasyadhipatiPoints = 0;
+  let rasyadhipatiDetails = "";
+  let rasyadhipatiDetailsNe = "";
+
+  // Planet friendship matrix
+  const planetFriends: Record<
+    string,
+    { friends: string[]; neutrals: string[]; enemies: string[] }
+  > = {
+    Sun: {
+      friends: ["Moon", "Mars", "Jupiter"],
+      neutrals: ["Mercury"],
+      enemies: ["Venus", "Saturn", "Rahu", "Ketu"],
+    },
+    Moon: {
+      friends: ["Sun", "Mercury"],
+      neutrals: ["Mars", "Jupiter", "Venus", "Saturn"],
+      enemies: ["Rahu", "Ketu"],
+    },
+    Mars: {
+      friends: ["Sun", "Moon", "Jupiter"],
+      neutrals: ["Venus", "Saturn"],
+      enemies: ["Mercury", "Rahu", "Ketu"],
+    },
+    Mercury: {
+      friends: ["Sun", "Venus"],
+      neutrals: ["Mars", "Jupiter", "Saturn"],
+      enemies: ["Moon", "Rahu", "Ketu"],
+    },
+    Jupiter: {
+      friends: ["Sun", "Moon", "Mars"],
+      neutrals: ["Saturn"],
+      enemies: ["Mercury", "Venus", "Rahu", "Ketu"],
+    },
+    Venus: {
+      friends: ["Mercury", "Saturn"],
+      neutrals: ["Mars", "Jupiter"],
+      enemies: ["Sun", "Moon", "Rahu", "Ketu"],
+    },
+    Saturn: {
+      friends: ["Mercury", "Venus"],
+      neutrals: ["Jupiter"],
+      enemies: ["Sun", "Moon", "Mars", "Rahu", "Ketu"],
+    },
+    Rahu: {
+      friends: ["Venus", "Saturn"],
+      neutrals: [],
+      enemies: ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Ketu"],
+    },
+    Ketu: {
+      friends: ["Mars", "Venus"],
+      neutrals: [],
+      enemies: ["Sun", "Moon", "Mercury", "Jupiter", "Saturn", "Rahu"],
+    },
+  };
+
+  const friendship = planetFriends[lord1] || {
+    friends: [],
+    neutrals: [],
+    enemies: [],
+  };
+
+  if (lord1 === lord2) {
+    rasyadhipatiPoints = 5;
+    rasyadhipatiDetails = `Same lord (${lord1}) - excellent`;
+    rasyadhipatiDetailsNe = `एकै स्वामी (${rashi1.lordNe}) - उत्कृष्ट`;
+  } else if (friendship.friends.includes(lord2)) {
+    rasyadhipatiPoints = 4;
+    rasyadhipatiDetails = `${lord1} and ${lord2} are friends - good`;
+    rasyadhipatiDetailsNe = `${rashi1.lordNe} र ${rashi2.lordNe} मित्र हुन् - राम्रो`;
+  } else if (friendship.neutrals.includes(lord2)) {
+    rasyadhipatiPoints = 2;
+    rasyadhipatiDetails = `${lord1} and ${lord2} are neutral - moderate`;
+    rasyadhipatiDetailsNe = `${rashi1.lordNe} र ${rashi2.lordNe} तटस्थ हुन् - मध्यम`;
+  } else {
+    rasyadhipatiPoints = 0;
+    rasyadhipatiDetails = `${lord1} and ${lord2} are enemies - challenging`;
+    rasyadhipatiDetailsNe = `${rashi1.lordNe} र ${rashi2.lordNe} शत्रु हुन् - चुनौतीपूर्ण`;
+  }
+
+  kootas.push({
+    name: "Rasyadhipati",
+    nameNe: "राश्याधिपति",
+    description: "Moon sign lord friendship",
+    descriptionNe: "चन्द्र राशि स्वामी मैत्री",
+    maxPoints: 5,
+    pointsObtained: rasyadhipatiPoints,
+    details: rasyadhipatiDetails,
+    detailsNe: rasyadhipatiDetailsNe,
+    isCompatible: rasyadhipatiPoints >= 3,
+  });
+
+  // 6. VARNA KOOTA (Caste/Spiritual level) - Max 1 point
+  const varna1 = rashi1.varna;
+  const varna2 = rashi2.varna;
+  const varnaOrder = ["Brahmin", "Kshatriya", "Vaishya", "Shudra"];
+  const varnaIndex1 = varnaOrder.indexOf(varna1);
+  const varnaIndex2 = varnaOrder.indexOf(varna2);
+  let varnaPoints = 0;
+  let varnaDetails = "";
+  let varnaDetailsNe = "";
+
+  if (varnaIndex1 <= varnaIndex2) {
+    varnaPoints = 1;
+    varnaDetails = `${varna1} to ${varna2} - compatible (groom's varna >= bride's)`;
+    varnaDetailsNe = `${rashi1.varna === "Brahmin" ? "ब्राह्मण" : rashi1.varna === "Kshatriya" ? "क्षत्रिय" : rashi1.varna === "Vaishya" ? "वैश्य" : "शूद्र"} देखि ${rashi2.varna === "Brahmin" ? "ब्राह्मण" : rashi2.varna === "Kshatriya" ? "क्षत्रिय" : rashi2.varna === "Vaishya" ? "वैश्य" : "शूद्र"} - अनुकूल`;
+  } else {
+    varnaPoints = 0;
+    varnaDetails = `${varna1} to ${varna2} - not compatible (groom's varna < bride's)`;
+    varnaDetailsNe = `${rashi1.varna === "Brahmin" ? "ब्राह्मण" : rashi1.varna === "Kshatriya" ? "क्षत्रिय" : rashi1.varna === "Vaishya" ? "वैश्य" : "शूद्र"} देखि ${rashi2.varna === "Brahmin" ? "ब्राह्मण" : rashi2.varna === "Kshatriya" ? "क्षत्रिय" : rashi2.varna === "Vaishya" ? "वैश्य" : "शूद्र"} - अनुकूल छैन`;
+  }
+
+  kootas.push({
+    name: "Varna",
+    nameNe: "वर्ण",
+    description: "Spiritual/caste compatibility",
+    descriptionNe: "आध्यात्मिक/वर्ण अनुकूलता",
+    maxPoints: 1,
+    pointsObtained: varnaPoints,
+    details: varnaDetails,
+    detailsNe: varnaDetailsNe,
+    isCompatible: varnaPoints === 1,
+  });
+
+  // 7. VASHYA KOOTA (Mutual attraction/control) - Max 2 points
+  // Based on rashi categories
+  const vashyaGroups: Record<string, string[]> = {
+    Chatushpada: ["Aries", "Taurus", "Leo", "Sagittarius", "Capricorn"], // Quadruped
+    Manava: ["Gemini", "Virgo", "Libra", "Aquarius"], // Human
+    Jalachara: ["Cancer", "Scorpio", "Pisces"], // Water-dwelling
+    Keeta: ["Scorpio"], // Insect (Scorpio)
+  };
+
+  const getVashyaGroup = (sign: string): string => {
+    for (const [group, signs] of Object.entries(vashyaGroups)) {
+      if (signs.includes(sign)) return group;
+    }
+    return "Unknown";
+  };
+
+  const vashyaGroup1 = getVashyaGroup(rashi1.en);
+  const vashyaGroup2 = getVashyaGroup(rashi2.en);
+  let vashyaPoints = 0;
+  let vashyaDetails = "";
+  let vashyaDetailsNe = "";
+
+  if (vashyaGroup1 === vashyaGroup2) {
+    vashyaPoints = 2;
+    vashyaDetails = `Same vashya group (${vashyaGroup1}) - excellent mutual attraction`;
+    vashyaDetailsNe = `एकै वश्य समूह (${vashyaGroup1}) - उत्कृष्ट पारस्परिक आकर्षण`;
+  } else if (
+    (vashyaGroup1 === "Chatushpada" && vashyaGroup2 === "Manava") ||
+    (vashyaGroup1 === "Manava" && vashyaGroup2 === "Chatushpada") ||
+    (vashyaGroup1 === "Jalachara" && vashyaGroup2 === "Keeta") ||
+    (vashyaGroup1 === "Keeta" && vashyaGroup2 === "Jalachara")
+  ) {
+    vashyaPoints = 1;
+    vashyaDetails = `${vashyaGroup1} and ${vashyaGroup2} - moderate attraction`;
+    vashyaDetailsNe = `${vashyaGroup1} र ${vashyaGroup2} - मध्यम आकर्षण`;
+  } else {
+    vashyaPoints = 0;
+    vashyaDetails = `${vashyaGroup1} and ${vashyaGroup2} - low mutual attraction`;
+    vashyaDetailsNe = `${vashyaGroup1} र ${vashyaGroup2} - कम पारस्परिक आकर्षण`;
+  }
+
+  kootas.push({
+    name: "Vashya",
+    nameNe: "वश्य",
+    description: "Mutual attraction and control",
+    descriptionNe: "पारस्परिक आकर्षण र नियन्त्रण",
+    maxPoints: 2,
+    pointsObtained: vashyaPoints,
+    details: vashyaDetails,
+    detailsNe: vashyaDetailsNe,
+    isCompatible: vashyaPoints >= 1,
+  });
+
+  // 8. TARA KOOTA (Nakshatra star compatibility) - Max 3 points
+  // Based on nakshatra distance groups
+  const taraGroups = [
+    [0, 8, 16], // Janma Tara
+    [1, 9, 17], // Sampat Tara
+    [2, 10, 18], // Vipat Tara
+    [3, 11, 19], // Kshema Tara
+    [4, 12, 20], // Pratyari Tara
+    [5, 13, 21], // Sadhaka Tara
+    [6, 14, 22], // Vadha Tara
+    [7, 15, 23], // Mitra Tara
+    [24, 25, 26], // Ati-Mitra Tara
+  ];
+
+  let taraPoints = 0;
+  let taraDetails = "";
+  let taraDetailsNe = "";
+
+  // Find which tara group the distance falls into
+  let taraGroupIndex = -1;
+  for (let i = 0; i < taraGroups.length; i++) {
+    if (taraGroups[i].includes(dinaDistance)) {
+      taraGroupIndex = i;
+      break;
+    }
+  }
+
+  // Favorable tara groups: 1 (Sampat), 3 (Kshema), 5 (Sadhaka), 7 (Mitra), 8 (Ati-Mitra)
+  const favorableTaraGroups = [1, 3, 5, 7, 8];
+  const unfavorableTaraGroups = [2, 4, 6]; // Vipat, Pratyari, Vadha
+
+  if (favorableTaraGroups.includes(taraGroupIndex)) {
+    taraPoints = 3;
+    taraDetails = `Favorable tara group - excellent nakshatra compatibility`;
+    taraDetailsNe = `अनुकूल तारा समूह - उत्कृष्ट नक्षत्र अनुकूलता`;
+  } else if (unfavorableTaraGroups.includes(taraGroupIndex)) {
+    taraPoints = 0;
+    taraDetails = `Unfavorable tara group - challenging nakshatra compatibility`;
+    taraDetailsNe = `प्रतिकूल तारा समूह - चुनौतीपूर्ण नक्षत्र अनुकूलता`;
+  } else {
+    taraPoints = 1.5;
+    taraDetails = `Neutral tara group - moderate nakshatra compatibility`;
+    taraDetailsNe = `तटस्थ तारा समूह - मध्यम नक्षत्र अनुकूलता`;
+  }
+
+  kootas.push({
+    name: "Tara",
+    nameNe: "तारा",
+    description: "Nakshatra star compatibility",
+    descriptionNe: "नक्षत्र तारा अनुकूलता",
+    maxPoints: 3,
+    pointsObtained: taraPoints,
+    details: taraDetails,
+    detailsNe: taraDetailsNe,
+    isCompatible: taraPoints >= 3,
+  });
+
+  // 9. NADI KOOTA (Genetic/Health compatibility) - Max 8 points
+  const nadi1 = nak1.nadi;
+  const nadi2 = nak2.nadi;
+  let nadiPoints = 0;
+  let nadiDetails = "";
+  let nadiDetailsNe = "";
+
+  if (nadi1 !== nadi2) {
+    nadiPoints = 8;
+    nadiDetails = `Different nadis (${nak1.nadiNe} & ${nak2.nadiNe}) - excellent genetic compatibility`;
+    nadiDetailsNe = `फरक नाडी (${nak1.nadiNe} र ${nak2.nadiNe}) - उत्कृष्ट आनुवंशिक अनुकूलता`;
+  } else {
+    nadiPoints = 0;
+    nadiDetails = `Same nadi (${nak1.nadiNe}) - Nadi Dosha, challenging for progeny`;
+    nadiDetailsNe = `एकै नाडी (${nak1.nadiNe}) - नाडी दोष, सन्तानको लागि चुनौतीपूर्ण`;
+  }
+
+  kootas.push({
+    name: "Nadi",
+    nameNe: "नाडी",
+    description: "Genetic/health/progeny compatibility",
+    descriptionNe: "आनुवंशिक/स्वास्थ्य/सन्तान अनुकूलता",
+    maxPoints: 8,
+    pointsObtained: nadiPoints,
+    details: nadiDetails,
+    detailsNe: nadiDetailsNe,
+    isCompatible: nadiPoints === 8,
+  });
+
+  // 10. MAHENDRA KOOTA (Longevity/Prosperity) - Max 2 points
+  // Based on nakshatra position difference
+  const mahendraDistance =
+    (moon2.nakshatraIndex - moon1.nakshatraIndex + 27) % 27;
+  let mahendraPoints = 0;
+  let mahendraDetails = "";
+  let mahendraDetailsNe = "";
+
+  // Favorable distances for Mahendra: 4, 7, 10, 13, 16, 19, 22, 25
+  const favorableMahendra = [4, 7, 10, 13, 16, 19, 22, 25];
+
+  if (favorableMahendra.includes(mahendraDistance)) {
+    mahendraPoints = 2;
+    mahendraDetails = `Favorable Mahendra distance - good longevity and prosperity`;
+    mahendraDetailsNe = `अनुकूल महेन्द्र दूरी - राम्रो आयु र समृद्धि`;
+  } else {
+    mahendraPoints = 0;
+    mahendraDetails = `Unfavorable Mahendra distance - moderate longevity`;
+    mahendraDetailsNe = `प्रतिकूल महेन्द्र दूरी - मध्यम आयु`;
+  }
+
+  kootas.push({
+    name: "Mahendra",
+    nameNe: "महेन्द्र",
+    description: "Longevity and prosperity",
+    descriptionNe: "आयु र समृद्धि",
+    maxPoints: 2,
+    pointsObtained: mahendraPoints,
+    details: mahendraDetails,
+    detailsNe: mahendraDetailsNe,
+    isCompatible: mahendraPoints === 2,
+  });
+
+  // Calculate totals
+  const totalPoints = kootas.reduce((sum, k) => sum + k.pointsObtained, 0);
+  const maxTotalPoints = kootas.reduce((sum, k) => sum + k.maxPoints, 0);
+  const percentage = Math.round((totalPoints / maxTotalPoints) * 100);
+
+  // Determine verdict
+  let verdict: "Excellent" | "Good" | "Average" | "Poor";
+  let verdictNe: string;
+  let summary: string;
+  let summaryNe: string;
+
+  if (percentage >= 70) {
+    verdict = "Excellent";
+    verdictNe = "उत्कृष्ट";
+    summary = "Excellent compatibility - highly recommended for marriage";
+    summaryNe = "उत्कृष्ट अनुकूलता - विवाहको लागि अति सिफारिस";
+  } else if (percentage >= 50) {
+    verdict = "Good";
+    verdictNe = "राम्रो";
+    summary =
+      "Good compatibility - favorable for marriage with mutual understanding";
+    summaryNe = "राम्रो अनुकूलता - पारस्परिक समझसाथ विवाहको लागि अनुकूल";
+  } else if (percentage >= 35) {
+    verdict = "Average";
+    verdictNe = "मध्यम";
+    summary =
+      "Average compatibility - marriage possible with effort and remedies";
+    summaryNe = "मध्यम अनुकूलता - प्रयास र उपचारसाथ विवाह सम्भव";
+  } else {
+    verdict = "Poor";
+    verdictNe = "नराम्रो";
+    summary =
+      "Poor compatibility - not recommended without strong remedial measures";
+    summaryNe = "नराम्रो अनुकूलता - बलियो उपचार बिना सिफारिस गरिएको छैन";
+  }
+
+  return {
+    kootas,
+    totalPoints,
+    maxTotalPoints,
+    percentage,
+    verdict,
+    verdictNe,
+    summary,
+    summaryNe,
+  };
 }

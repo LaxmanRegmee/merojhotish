@@ -5,15 +5,11 @@ import {
   GenderMaleIcon,
   SunIcon,
   AsclepiusIcon,
+  PlanetIcon,
+  LifebuoyIcon,
+  StarIcon,
+  ShootingStarIcon,
 } from "@phosphor-icons/react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Saturn02Icon,
-  JupiterIcon,
-  VenusIcon,
-  Asteroid02Icon,
-  Moon01Icon,
-} from "@hugeicons/core-free-icons";
 
 import AvakahadaChakra from "@/components/AvakahadaChakra";
 import { MAJOR_NEPALI_CITIES, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
@@ -312,15 +308,15 @@ function getDashaIcon(planet: string) {
     case "Mercury":
       return <AsclepiusIcon {...iconProps} />;
     case "Jupiter":
-      return <HugeiconsIcon icon={JupiterIcon} {...iconProps} />;
+      return <PlanetIcon {...iconProps} />;
     case "Saturn":
-      return <HugeiconsIcon icon={Saturn02Icon} {...iconProps} />;
+      return <LifebuoyIcon {...iconProps} />;
     case "Venus":
-      return <HugeiconsIcon icon={VenusIcon} {...iconProps} />;
+      return <StarIcon {...iconProps} />;
     case "Rahu":
-      return <HugeiconsIcon icon={Moon01Icon} {...iconProps} />;
+      return <MoonIcon {...iconProps} />;
     case "Ketu":
-      return <HugeiconsIcon icon={Asteroid02Icon} {...iconProps} />;
+      return <ShootingStarIcon {...iconProps} />;
     default:
       return <AsclepiusIcon {...iconProps} />;
   }

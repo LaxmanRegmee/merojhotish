@@ -1,3 +1,4 @@
+// components/AISummaryGenerator.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,12 +7,57 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import DOMPurify from "dompurify";
 import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface AISummaryGeneratorProps {
   reportData: CompleteBirthChartReport;
   language?: Language;
 }
+
+// Sanitize HTML content to prevent XSS
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p", "br", "strong", "em", "u", "s", "code", "pre",
+      "h1", "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li",
+      "blockquote", "hr",
+      "a", "span", "div",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+    ALLOW_DATA_ATTR: false,
+    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form", "input", "button"],
+    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur"],
+  });
+}
+
+// Custom ReactMarkdown components with sanitization
+const markdownComponents = {
+  a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline hover:no-underline"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+  code: ({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) => {
+    const isInline = !className?.includes("language-");
+    if (isInline) {
+      return <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>;
+    }
+    return <code className={className} {...props}>{children}</code>;
+  },
+  pre: ({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) => (
+    <pre className="bg-muted p-3 rounded overflow-x-auto text-sm" {...props}>
+      {children}
+    </pre>
+  ),
+};
 
 export default function AISummaryGenerator({
   reportData,
@@ -101,12 +147,12 @@ export default function AISummaryGenerator({
                   isNepali ? (
                     "पुनः तयार गर्नुहोस्"
                   ) : (
-                    "Regenerate Summary"
+                    "Regenerate AI summary"
                   )
                 ) : isNepali ? (
                   "AI सारांश प्राप्त गर्नुहोस्"
                 ) : (
-                  "Generate Report"
+                  "Generate AI summary"
                 )}
               </Button>
             </div>
@@ -120,7 +166,10 @@ export default function AISummaryGenerator({
             {summary && (
               <div className="scroll-fade no-scrollbar mt-6 text-foreground leading-relaxed text-sm h-[calc(100vh-100px)]  overflow-y-auto">
                 <div className="[&>p]:mb-3 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_h1]:mb-3 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-semibold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_hr]:my-4 [&_hr]:border-border">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
                     {summary}
                   </ReactMarkdown>
                 </div>
