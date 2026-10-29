@@ -1,7 +1,7 @@
 // components/NorthIndianKundali.tsx
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 interface NorthIndianChartProps {
   title: string;
@@ -10,7 +10,8 @@ interface NorthIndianChartProps {
   chartData: Record<number, string[]>;
 }
 
-const HOUSE_POSITIONS = [
+// Base house positions for a 400x400 viewBox
+const BASE_HOUSE_POSITIONS = [
   { house: 1, signPos: { x: 200, y: 180 }, planetPos: { x: 200, y: 100 } },
   { house: 2, signPos: { x: 135, y: 25 }, planetPos: { x: 100, y: 60 } },
   { house: 3, signPos: { x: 25, y: 135 }, planetPos: { x: 60, y: 100 } },
@@ -31,6 +32,22 @@ export default function NorthIndianKundali({
   lagnaSignIndex,
   chartData,
 }: NorthIndianChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState(300);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth;
+        setContainerSize(Math.min(Math.max(width, 200), 500));
+      }
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
   return (
     <div className="p-3 text-primary">
       <div className="mb-2 text-center">
@@ -40,8 +57,16 @@ export default function NorthIndianKundali({
         )}
       </div>
 
-      <div className="mx-auto bg-card aspect-square w-full max-w-105">
-        <svg viewBox="0 0 400 400" className="h-full w-full select-none">
+      <div
+        ref={containerRef}
+        className="mx-auto bg-card aspect-square w-full"
+        style={{ maxWidth: containerSize }}
+      >
+        <svg
+          viewBox="0 0 400 400"
+          className="h-full w-full select-none"
+          preserveAspectRatio="xMidYMid meet"
+        >
           <rect
             x="2"
             y="2"
@@ -75,7 +100,7 @@ export default function NorthIndianKundali({
             strokeWidth="1.5"
           />
 
-          {HOUSE_POSITIONS.map(({ house, signPos, planetPos }) => {
+          {BASE_HOUSE_POSITIONS.map(({ house, signPos, planetPos }) => {
             const signNumber = ((lagnaSignIndex + house - 1) % 12) + 1;
             const planetsInHouse = chartData[house] ?? [];
 
@@ -86,7 +111,8 @@ export default function NorthIndianKundali({
                   y={signPos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="fill-primary font-bold text-[13px]"
+                  className="fill-primary font-bold"
+                  style={{ fontSize: "13px" }}
                 >
                   {signNumber}
                 </text>
@@ -95,7 +121,8 @@ export default function NorthIndianKundali({
                   y={planetPos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="fill-foreground font-semibold text-[13px]"
+                  className="fill-foreground font-semibold"
+                  style={{ fontSize: "13px" }}
                 >
                   {planetsInHouse.map((planetName, index) => (
                     <tspan

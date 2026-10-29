@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { CakeIcon } from "@phosphor-icons/react";
+import Link from "next/link";
+import { CakeIcon, HeartIcon } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
 import logo from "@/lib/logo.png";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,11 @@ import LanguageSwitcher, { type Language } from "@/components/LanguageSwitcher";
 import KundaliReportLayout from "@/components/KundaliReportLayout";
 import AISummarySection from "@/components/AISummarySection";
 import HeaderNavigation from "@/components/HeaderNavigation";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
-export default function Home() {
+function HomeContent() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export default function Home() {
           ? "कुण्डली बनाउन सकिएन।"
           : submissionError instanceof Error
             ? submissionError.message
-            : "Could not create the birth chart.",
+            : "Could not create your birth chart. Please check your birth details and try again.",
       );
     } finally {
       setLoading(false);
@@ -65,17 +67,17 @@ export default function Home() {
           <div className="flex max-w-2xl flex-col items-center text-center">
             <div className="mb-8 inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               <CakeIcon weight="regular" size={14} aria-hidden="true" />
-              {isNepali ? "जन्म कुण्डली स्टुडियो" : "Birth chart studio"}
+              {isNepali ? "जन्म कुण्डली स्टुडियो" : "Your birth chart studio"}
             </div>
             <h1 className="max-w-154.75 text-5xl font-semibold leading-13 tracking-tight text-primary md:text-6xl md:leading-[1.02]">
-              {isNepali ? "आकाशको नक्सा," : "Subashhhhhhhhhh,"}
+              {isNepali ? "आकाशको नक्सा," : "The sky's map,"}
               <br />
-              {isNepali ? "तपाईंको जीवनको कथा!" : "Story of your life!"}
+              {isNepali ? "तपाईंको जीवनको कथा!" : "Your life's story."}
             </h1>
             <p className="mt-4 max-w-136 w-full text-md leading-5 text-muted-foreground">
               {isNepali
                 ? "तपाईंको विक्रम संवत् जन्म विवरणबाट सटीक उत्तर भारतीय लग्न कुण्डली,\nनक्षत्रीय ग्रह स्थिति र पढ्न सजिलो\nपञ्चाङ्ग सारांश तयार गर्नुहोस्।"
-                : "Generate a precise North Indian lagna kundali from your Bikram Sambat birth details,\nwith sidereal planetary positions and a readable\npanchang summary."}
+                : "Generate a precise North Indian lagna kundali from your Bikram Sambat birth details, with sidereal planetary positions and a readable panchang summary."}
             </p>
             <Button
               variant="default"
@@ -89,6 +91,14 @@ export default function Home() {
             >
               {isNepali ? "सुरु गर्नुहोस्" : "Get Started"}
             </Button>
+            <Link href="/compatibility" className="mt-4 inline-block">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                <HeartIcon weight="regular" size={18} className="mr-2" />
+                {isNepali
+                  ? "विवाह मिलान गर्नुहोस्"
+                  : "Check Marriage Compatibility"}
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -106,7 +116,7 @@ export default function Home() {
                     <p className=" font-medium text-2xl md:max-w-150 md:w-full text-foreground">
                       {isNepali
                         ? "यो चार्टले तपाईंको जन्म समयमा आकाशीय अवस्थाको सटीक नक्सा प्रस्तुत गर्दछ।"
-                        : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
+                        : "This chart shows the exact positions of planets at your birth, revealing your core nature, life path, and key patterns."}
                     </p>
                   </div>
                   <KundaliChartsView report={chartData} language={language} />
@@ -138,5 +148,13 @@ export default function Home() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <ErrorBoundary>
+      <HomeContent />
+    </ErrorBoundary>
   );
 }
