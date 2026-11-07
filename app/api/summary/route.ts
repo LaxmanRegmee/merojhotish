@@ -30,7 +30,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "nvidia/nemotron-3-super-120b-a12b",
+          model: process.env.NVIDIA_MODEL || "mistralai/mistral-nemo-instruct-2407",
           messages: [
             {
               role: "system",
