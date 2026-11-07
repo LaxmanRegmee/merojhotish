@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";

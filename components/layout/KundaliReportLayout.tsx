@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 
 interface KundaliReportLayoutProps {

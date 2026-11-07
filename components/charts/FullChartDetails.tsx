@@ -15,13 +15,13 @@ import {
   Moon01Icon,
 } from "@hugeicons/core-free-icons";
 
-import AvakahadaChakra from "@/components/AvakahadaChakra";
+import AvakahadaChakra from "@/components/charts/AvakahadaChakra";
 import { MAJOR_NEPALI_CITIES, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
 import type {
   CompleteBirthChartReport,
   DashaPeriod,
 } from "@/lib/jyotish-engine";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import type { ReactNode } from "react";
 
 interface FullChartDetailsProps {

@@ -6,13 +6,13 @@ import { CakeIcon } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
 import logo from "@/lib/logo.png";
 import { Button } from "@/components/ui/button";
-import KundaliForm from "@/components/KundaliForm";
-import KundaliChartsView from "@/components/KundaliChartsView";
-import FullChartDetails from "@/components/FullChartDetails";
-import LanguageSwitcher, { type Language } from "@/components/LanguageSwitcher";
-import KundaliReportLayout from "@/components/KundaliReportLayout";
-import AISummarySection from "@/components/AISummarySection";
-import HeaderNavigation from "@/components/HeaderNavigation";
+import KundaliForm from "@/components/forms/KundaliForm";
+import KundaliChartsView from "@/components/charts/KundaliChartsView";
+import FullChartDetails from "@/components/charts/FullChartDetails";
+import LanguageSwitcher, { type Language } from "@/components/layout/LanguageSwitcher";
+import KundaliReportLayout from "@/components/layout/KundaliReportLayout";
+import AISummarySection from "@/components/ai/AISummarySection";
+import HeaderNavigation from "@/components/layout/HeaderNavigation";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 

@@ -7,7 +7,7 @@ import { MAJOR_NEPALI_CITIES } from "@/lib/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { NepaliDatePicker } from "@/components/ui/date-picker";
+import { NepaliDatePicker } from "@/components/forms/date-picker";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Clock } from "lucide-react";
 
 interface FormProps {
