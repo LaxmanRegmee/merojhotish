@@ -3,11 +3,11 @@
 
 import { useState } from "react";
 import { CircleNotchIcon, ClockIcon } from "@phosphor-icons/react";
-import { MAJOR_NEPALI_CITIES } from "@/lib/bs-converter";
+import { MAJOR_NEPALI_CITIES, getMaxBSDay } from "@/lib/bs-converter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { NepaliDatePicker } from "@/components/ui/date-picker";
+import { NepaliDatePicker } from "@/components/forms/date-picker";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Clock } from "lucide-react";
 
 interface FormProps {
@@ -35,7 +35,7 @@ export default function KundaliForm({
   language,
 }: FormProps) {
   const isNepali = language === "np";
-  const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 0 });
+  const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 1 });
   const [birthTime, setBirthTime] = useState("21:23");
   const [city, setCity] = useState("");
 
@@ -60,6 +60,7 @@ export default function KundaliForm({
             </Label>
             <NepaliDatePicker
               {...birthDate}
+              maxDay={getMaxBSDay(birthDate.month)}
               language={language}
               onChange={setBirthDate}
             />

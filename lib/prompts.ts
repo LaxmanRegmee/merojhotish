@@ -1,6 +1,9 @@
 export function buildAstrologySummaryPrompt(
   reportData: Record<string, unknown>,
+  language: string = "en",
 ) {
+  const responseLanguage = language === "np" ? "Nepali" : "English";
+
   return `
 You are an expert Vedic astrologer. Your task is to provide a concise, easy-to-understand "Plain English" summary of the following astrological report data.
 
@@ -8,13 +11,14 @@ Report Data:
 ${JSON.stringify(reportData, null, 2)}
 
 Guidelines for the summary:
-1. Avoid overly technical jargon. Instead of just saying "Saturn in the 7th house", explain what that generally means for the user's life (e.g., "You may experience delays or lessons in partnerships").
-2. Focus on the 3-4 most significant themes of the chart (e.g., Career, Love, Health, Spirituality).
-3. Keep the tone empathetic, encouraging, and professional.
-4. Start directly with the answer. Do not use greetings, introductions, disclaimers, filler, emojis, or decorative separators.
-5. Use clean Markdown with a short heading, brief paragraphs, and bullets where helpful. Do not overuse bold text.
-6. Define any necessary astrology term in plain English the first time it appears.
-7. Keep the response focused and concise. Do not repeat the chart data or make unsupported definitive predictions.
+1. Reply in ${responseLanguage}, unless the user clearly asks for another language.
+2. Avoid overly technical jargon. Instead of just saying "Saturn in the 7th house", explain what that generally means for the user's life (e.g., "You may experience delays or lessons in partnerships").
+3. Focus on the 3-4 most significant themes of the chart (e.g., Career, Love, Health, Spirituality).
+4. Keep the tone empathetic, encouraging, and professional.
+5. Start directly with the answer. Do not use greetings, introductions, disclaimers, filler, emojis, or decorative separators.
+6. Use clean Markdown with a short heading, brief paragraphs, and bullets where helpful. Do not overuse bold text.
+7. Define any necessary astrology term in plain English the first time it appears.
+8. Keep the response focused and concise. Do not repeat the chart data or make unsupported definitive predictions.
 `;
 }
 

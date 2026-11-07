@@ -1,8 +1,8 @@
 "use client";
 
-import type { Language } from "@/components/LanguageSwitcher";
-import AISummaryGenerator from "@/components/AISummaryGenerator";
-import AIChat from "@/components/AIChat";
+import type { Language } from "@/components/layout/LanguageSwitcher";
+import AISummaryGenerator from "@/components/ai/AISummaryGenerator";
+import AIChat from "@/components/ai/AIChat";
 import { Circle, FlutedGlass, Shader } from "shaders/react";
 import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 

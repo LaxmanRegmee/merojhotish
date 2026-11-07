@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpIcon } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Bubble, BubbleContent } from "./ui/bubble";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import loadingAnimation from "@/components/animations/loadinganimation.json";
 import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";

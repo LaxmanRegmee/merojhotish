@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { chartData } = await req.json();
+    const { chartData, language = "en" } = await req.json();
 
     if (!chartData) {
       return NextResponse.json(
@@ -30,10 +30,18 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "nvidia/nemotron-3-super-120b-a12b",
+          model: process.env.NVIDIA_MODEL || "mistralai/mistral-nemo-instruct-2407",
           messages: [
-            { role: "system", content: buildAstrologySummaryPrompt(chartData) },
-            { role: "user", content: buildAstrologySummaryPrompt(chartData) },
+            {
+              role: "system",
+              content: `You are an expert Vedic astrologer who writes concise, easy-to-understand summaries in ${
+                language === "np" ? "Nepali" : "English"
+              }. Reply only in that language.`,
+            },
+            {
+              role: "user",
+              content: buildAstrologySummaryPrompt(chartData, language),
+            },
           ],
           temperature: 1,
           max_tokens: 1200,

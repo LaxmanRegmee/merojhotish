@@ -4,7 +4,7 @@
 import React from "react";
 import NorthIndianChart from "./NorthIndianKundali";
 import { CompleteBirthChartReport } from "@/lib/jyotish-engine";
-import type { Language } from "@/components/LanguageSwitcher";
+import type { Language } from "@/components/layout/LanguageSwitcher";
 
 interface Props {
   report: CompleteBirthChartReport;

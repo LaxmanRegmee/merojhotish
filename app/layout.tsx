@@ -38,14 +38,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
     languages: {
-      en: "/",
-      ne: "/",
+      en: "/?lang=en",
+      ne: "/?lang=ne",
     },
   },
   openGraph: {
     title: "MeroJyotish | Online Kundali, Birth Chart & Jyotish Astrology",
     description:
-      "Generate your kundali, view planetary positions, and explore jyotish astrology insights in Nepali and English.",
+      "Generate your kundali online, view birth chart details, explore jyotish astrology insights in Nepali and English.",
     url: "https://merojyotish.vercel.app",
     siteName: "MeroJyotish",
     type: "website",
@@ -77,7 +77,7 @@ export default function RootLayout({
         jetbrainsMono.variable,
       )}
     >
-      <body className="min-h-full flex flex-col font-mono">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
 }
