@@ -38,6 +38,15 @@ export const NEPALI_MONTHS_NE = [
   "चैत्र",
 ];
 
+export const BS_MONTH_DAYS: Record<number, number> = {
+  1: 30, 2: 31, 3: 32, 4: 31, 5: 31, 6: 31,
+  7: 30, 8: 30, 9: 29, 10: 30, 11: 30, 12: 30,
+};
+
+export function getMaxBSDay(month: number): number {
+  return BS_MONTH_DAYS[month] ?? 30;
+}
+
 export const MAJOR_NEPALI_CITIES = [
   // Major Metropolises & Sub-Metropolises
   { name: "Kathmandu", nameNe: "काठमाडौं", lat: 27.7172, lon: 85.324 },

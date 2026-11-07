@@ -24,6 +24,7 @@ interface NepaliDatePickerProps {
   year: number;
   month: number;
   day: number;
+  maxDay?: number;
   language: Language;
   onChange: (date: { year: number; month: number; day: number }) => void;
 }
@@ -32,6 +33,7 @@ export function NepaliDatePicker({
   year,
   month,
   day,
+  maxDay = 30,
   language,
   onChange,
 }: NepaliDatePickerProps) {
@@ -162,7 +164,7 @@ export function NepaliDatePicker({
           role="grid"
           aria-label={isNepali ? "वि.सं. दिन" : "B.S. day"}
         >
-          {Array.from({ length: 32 }, (_, index) => index + 1).map(
+          {Array.from({ length: maxDay }, (_, index) => index + 1).map(
             (dayNumber) => (
               <button
                 key={dayNumber}

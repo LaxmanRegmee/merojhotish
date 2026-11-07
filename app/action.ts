@@ -30,16 +30,17 @@ export async function generateKundaliAction(formData: FormData) {
   const adDate = bsToAd(bsYear, bsMonth, bsDay);
   const [hours, minutes] = birthTime.split(":").map((v) => parseInt(v, 10));
 
-  // Set Local Time in Nepal Standard Time (UTC+5:45) -> Subtract 5h 45m for UTC
-  const utcTimestamp = Date.UTC(
+  // Nepal Standard Time is UTC+5:45. Build a UTC timestamp for the local
+  // Nepal time, then subtract the offset to get true UTC.
+  const utcOffsetMs = 5 * 60 * 60 * 1000 + 45 * 60 * 1000; // 5h45m
+  const localTimestamp = Date.UTC(
     adDate.getUTCFullYear(),
     adDate.getUTCMonth(),
     adDate.getUTCDate(),
-    hours - 5,
-    minutes - 45,
+    hours,
+    minutes,
   );
-
-  const utcDate = new Date(utcTimestamp);
+  const utcDate = new Date(localTimestamp - utcOffsetMs);
 
   // Compute Sidereal Kundali
   const chartData = await generateFullBirthChart(utcDate, lat, lon, {
