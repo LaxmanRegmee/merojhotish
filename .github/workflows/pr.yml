@@ -1,0 +1,44 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check PR title format
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if ! echo "$TITLE" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)\(.+\): .+"; then
+            echo "❌ PR title does not follow conventional commit format."
+            echo "Expected: type(scope): description"
+            echo "Example: feat(auth): add login page"
+            echo "Got: $TITLE"
+            exit 1
+          fi
+          echo "✅ PR title format valid: $TITLE"
+
+      - name: Check for WIP
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if echo "$TITLE" | grep -qiE "wip|work in progress"; then
+            echo "⚠️ PR title contains WIP — consider marking as draft"
+          fi
+
+  changed-files:
+    name: List Changed Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        run: |
+          echo "Changed files in this PR:"
+          git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} || true
