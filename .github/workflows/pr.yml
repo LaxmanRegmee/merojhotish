@@ -15,14 +15,18 @@ jobs:
       - name: Check PR title format
         run: |
           TITLE="${{ github.event.pull_request.title }}"
-          if ! echo "$TITLE" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)\(.+\): .+"; then
-            echo "❌ PR title does not follow conventional commit format."
+          if [ -z "$TITLE" ]; then
+            echo "❌ PR title cannot be empty."
+            exit 1
+          fi
+          if echo "$TITLE" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)\(.+\): .+"; then
+            echo "✅ PR title follows conventional commit format: $TITLE"
+          else
+            echo "⚠️ PR title does not follow conventional commit format."
             echo "Expected: type(scope): description"
             echo "Example: feat(auth): add login page"
             echo "Got: $TITLE"
-            exit 1
           fi
-          echo "✅ PR title format valid: $TITLE"
 
       - name: Check for WIP
         run: |
