@@ -61,6 +61,35 @@ export interface PlanetAspect {
   isSpecial: boolean; // Whether this is a special aspect (Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th)
 }
 
+export interface TransitPlanet {
+  name: string;
+  nameNe: string;
+  longitude: number;
+  dms: string;
+  signIndex: number;
+  signName: string;
+  signNameNe: string;
+  house: number; // House in transit chart (relative to birth lagna)
+  isRetrograde: boolean;
+}
+
+export interface TransitChartData {
+  transitDate: string; // ISO date string of transit calculation
+  planets: TransitPlanet[];
+  chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 -> Planet names in transit
+  aspects: TransitAspect[]; // Aspects between transiting and natal planets
+}
+
+export interface TransitAspect {
+  transitPlanet: string;
+  transitPlanetNe: string;
+  natalPlanet: string;
+  natalPlanetNe: string;
+  aspectType: string;
+  aspectTypeNe: string;
+  degreeDistance: number;
+}
+
 export interface DashaPeriod {
   planet: string;
   planetNe: string;
@@ -128,6 +157,7 @@ export interface CompleteBirthChartReport {
   d30Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Trimsamsa
   aspects: Record<string, PlanetAspect[]>; // Aspects cast by each planet
   aspectsReceived: Record<string, PlanetAspect[]>; // Aspects received by each planet
+  transitChart: TransitChartData; // Current planetary positions (transit)
 }
 
 // --- LOOKUP TABLES & ASTROLOGICAL CONSTANTS ---
@@ -1097,6 +1127,129 @@ export async function generateFullBirthChart(
     // Calculate aspects for all planets
     const { aspects, aspectsReceived } = calculateAspects(planets);
 
+    // 7. Calculate Transit Chart (current planetary positions)
+    const transitNow = new Date();
+    const transitJd = swe.julday(
+      transitNow.getUTCFullYear(),
+      transitNow.getUTCMonth() + 1,
+      transitNow.getUTCDate(),
+      transitNow.getUTCHours() +
+        transitNow.getUTCMinutes() / 60 +
+        transitNow.getUTCSeconds() / 3600
+    );
+    swe.set_sid_mode(swe.SE_SIDM_LAHIRI, 0, 0);
+
+    const transitPlanets: TransitPlanet[] = [];
+    const transitChart: Record<number, { name: string; nameNe: string }[]> = {};
+    for (let h = 1; h <= 12; h++) {
+      transitChart[h] = [];
+    }
+
+    const transitPlanetList: { id: number; name: string; nameNe: string }[] = [
+      { id: swe.SE_SUN, name: "Sun", nameNe: "सूर्य" },
+      { id: swe.SE_MOON, name: "Moon", nameNe: "चन्द्र" },
+      { id: swe.SE_MARS, name: "Mars", nameNe: "मङ्गल" },
+      { id: swe.SE_MERCURY, name: "Mercury", nameNe: "बुध" },
+      { id: swe.SE_JUPITER, name: "Jupiter", nameNe: "गुरु" },
+      { id: swe.SE_VENUS, name: "Venus", nameNe: "शुक्र" },
+      { id: swe.SE_SATURN, name: "Saturn", nameNe: "शनि" },
+      { id: swe.SE_MEAN_NODE, name: "Rahu", nameNe: "राहु" },
+    ];
+
+    for (const p of transitPlanetList) {
+      const pos = swe.calc_ut(transitJd, p.id, flags);
+      const long = (pos[0] + 360) % 360;
+      const signIndex = Math.floor(long / 30);
+      const house = ((signIndex - lagnaSignIndex + 12) % 12) + 1;
+
+      transitPlanets.push({
+        name: p.name,
+        nameNe: p.nameNe,
+        longitude: long,
+        dms: toDMS(long % 30),
+        signIndex,
+        signName: RASHIS[signIndex].en,
+        signNameNe: RASHIS[signIndex].ne,
+        house,
+        isRetrograde: pos[3] < 0,
+      });
+
+      transitChart[house].push({ name: p.name, nameNe: p.nameNe });
+    }
+
+    // Add Ketu
+    const rahuT = transitPlanets.find((p) => p.name === "Rahu")!;
+    const ketuLongT = (rahuT.longitude + 180) % 360;
+    const ketuSignIdxT = Math.floor(ketuLongT / 30);
+    const ketuHouseT = ((ketuSignIdxT - lagnaSignIndex + 12) % 12) + 1;
+
+    transitPlanets.push({
+      name: "Ketu",
+      nameNe: "केतु",
+      longitude: ketuLongT,
+      dms: toDMS(ketuLongT % 30),
+      signIndex: ketuSignIdxT,
+      signName: RASHIS[ketuSignIdxT].en,
+      signNameNe: RASHIS[ketuSignIdxT].ne,
+      house: ketuHouseT,
+      isRetrograde: true, // Ketu is always retrograde
+    });
+    transitChart[ketuHouseT].push({ name: "Ketu", nameNe: "केतु" });
+
+    // Calculate transit-to-natal aspects
+    const transitAspects: TransitAspect[] = [];
+    for (const tPlanet of transitPlanets) {
+      for (const nPlanet of planets) {
+        const diff = Math.abs(tPlanet.longitude - nPlanet.longitude);
+        const diffDeg = diff > 180 ? 360 - diff : diff;
+        // Check for conjunction (0°), opposition (180°), trine (120°), square (90°), sextile (60°)
+        const aspectTypes = [0, 60, 90, 120, 180];
+        const matchedAspect = aspectTypes.find((a) => Math.abs(diffDeg - a) < 5);
+        if (matchedAspect !== undefined) {
+          let aspectType = "";
+          let aspectTypeNe = "";
+          switch (matchedAspect) {
+            case 0:
+              aspectType = "Conjunction";
+              aspectTypeNe = "संयोग";
+              break;
+            case 60:
+              aspectType = "Sextile";
+              aspectTypeNe = "षष्ठ दृष्टि";
+              break;
+            case 90:
+              aspectType = "Square";
+              aspectTypeNe = "चतुर्थ दृष्टि";
+              break;
+            case 120:
+              aspectType = "Trine";
+              aspectTypeNe = "त्रिकोण दृष्टि";
+              break;
+            case 180:
+              aspectType = "Opposition";
+              aspectTypeNe = "सप्तम दृष्टि";
+              break;
+          }
+          transitAspects.push({
+            transitPlanet: tPlanet.name,
+            transitPlanetNe: tPlanet.nameNe,
+            natalPlanet: nPlanet.name,
+            natalPlanetNe: nPlanet.nameNe,
+            aspectType,
+            aspectTypeNe,
+            degreeDistance: diffDeg,
+          });
+        }
+      }
+    }
+
+    const transitChartData: TransitChartData = {
+      transitDate: transitNow.toISOString(),
+      planets: transitPlanets,
+      chart: transitChart,
+      aspects: transitAspects,
+    };
+
     return {
       birthDetails: {
         gregorianDate: gregorianDate.toISOString(),
@@ -1181,6 +1334,7 @@ export async function generateFullBirthChart(
       d30Chart,
       aspects,
       aspectsReceived,
+      transitChart: transitChartData,
     };
   } finally {
     swe.close();
