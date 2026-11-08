@@ -46,6 +46,48 @@ export interface DetailedPlanet {
   d9SignIndex: number; // Sign position in Navamsha (D9)
   d9SignName: string;
   d9SignNameNe: string;
+  aspects: PlanetAspect[]; // Aspects this planet casts
+  aspectsReceived: PlanetAspect[]; // Aspects received by this planet
+}
+
+export interface PlanetAspect {
+  fromPlanet: string;
+  fromPlanetNe: string;
+  fromHouse: number;
+  toHouse: number;
+  aspectType: string; // e.g., "7th aspect", "4th aspect", "Special aspect"
+  aspectTypeNe: string;
+  degreeDistance: number; // Degrees between the two planets
+  isSpecial: boolean; // Whether this is a special aspect (Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th)
+}
+
+export interface TransitPlanet {
+  name: string;
+  nameNe: string;
+  longitude: number;
+  dms: string;
+  signIndex: number;
+  signName: string;
+  signNameNe: string;
+  house: number; // House in transit chart (relative to birth lagna)
+  isRetrograde: boolean;
+}
+
+export interface TransitChartData {
+  transitDate: string; // ISO date string of transit calculation
+  planets: TransitPlanet[];
+  chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 -> Planet names in transit
+  aspects: TransitAspect[]; // Aspects between transiting and natal planets
+}
+
+export interface TransitAspect {
+  transitPlanet: string;
+  transitPlanetNe: string;
+  natalPlanet: string;
+  natalPlanetNe: string;
+  aspectType: string;
+  aspectTypeNe: string;
+  degreeDistance: number;
 }
 
 export interface DashaPeriod {
@@ -113,6 +155,9 @@ export interface CompleteBirthChartReport {
   d10Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Dashamsa
   d12Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Dwadasamsa
   d30Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Trimsamsa
+  aspects: Record<string, PlanetAspect[]>; // Aspects cast by each planet
+  aspectsReceived: Record<string, PlanetAspect[]>; // Aspects received by each planet
+  transitChart: TransitChartData; // Current planetary positions (transit)
 }
 
 // --- LOOKUP TABLES & ASTROLOGICAL CONSTANTS ---
@@ -550,22 +595,6 @@ function calculateD9Sign(longitude: number): number {
 
 // --- Divisional Chart Calculation Functions ---
 
-// D2 Hora: Each sign (30°) divided into 2 parts of 15° each.
-// Odd signs: first half = Sun, second half = Moon
-// Even signs: first half = Moon, second half = Sun
-function calculateD2Sign(longitude: number): number {
-  const signIndex = Math.floor(longitude / 30);
-  const half = Math.floor((longitude % 30) / 15); // 0 or 1
-  const signIsOdd = signIndex % 2 === 0; // Aries(0) = odd sign in Vedic counting
-  // In Vedic, odd signs (1,3,5...) start with Sun, even signs start with Moon
-  // signIndex 0 = Aries = odd (1st sign) = starts with Sun
-  if (signIsOdd) {
-    return half === 0 ? 0 : 4; // Sun=0(Aries), Moon=4(Cancer) - simplified: use sign ruler logic
-  } else {
-    return half === 0 ? 4 : 0; // Moon first for even signs
-  }
-}
-
 // Actually, Hora uses Sun and Moon rulership:
 // Odd signs: 0-15° = Sun (sign Aries/Leo ruler), 15-30° = Moon (sign Cancer)
 // Even signs: 0-15° = Moon, 15-30° = Sun
@@ -662,7 +691,130 @@ function calculateTrimsamsaSign(longitude: number): number {
   return rulers[part];
 }
 
-// --- MAIN GENERATOR FUNCTION ---
+// --- Planetary Aspects (Graha Drishti) ---
+
+// All planets aspect the 7th house from their position.
+// Special aspects:
+// - Mars: 4th, 7th, 8th
+// - Jupiter: 5th, 7th, 9th
+// - Saturn: 3rd, 7th, 10th
+// - Rahu/Ketu: 5th, 7th, 9th (common Vedic view)
+
+const PLANET_SPECIAL_ASPECTS: Record<string, number[]> = {
+  Mars: [4, 7, 8],
+  Jupiter: [5, 7, 9],
+  Saturn: [3, 7, 10],
+  Rahu: [5, 7, 9],
+  Ketu: [5, 7, 9],
+};
+
+// All planets aspect the 7th house by default
+const ALL_PLANETS_ASPECT = [7];
+
+function getAspectHouses(planetName: string): number[] {
+  const special = PLANET_SPECIAL_ASPECTS[planetName];
+  if (special) {
+    return special;
+  }
+  return ALL_PLANETS_ASPECT;
+}
+
+/**
+ * Calculate which houses a planet aspects from its current position.
+ * Returns an array of house numbers (1-12) that are aspected.
+ */
+function calculateAspectsFromPlanet(longitude: number, planetName: string): number[] {
+  const signIndex = Math.floor(longitude / 30);
+  const aspectHouses = getAspectHouses(planetName);
+  return aspectHouses.map((houseOffset) => {
+    // aspect house = current sign index + (houseOffset - 1), modulo 12
+    return ((signIndex + houseOffset - 1) % 12) + 1;
+  });
+}
+
+/**
+ * Calculate the angular distance between two planets in degrees (0-360).
+ */
+function calculateDegreeDistance(long1: number, long2: number): number {
+  let diff = Math.abs(long1 - long2);
+  if (diff > 180) diff = 360 - diff;
+  return diff;
+}
+
+/**
+ * Get aspect type description based on house distance from the aspecting planet.
+ * House difference 1 = 1st house (conjunction), 7 = 7th house (opposition), etc.
+ */
+function getAspectType(houseDiff: number): { type: string; typeNe: string; isSpecial: boolean } {
+  const aspectMap: Record<number, { type: string; typeNe: string; isSpecial: boolean }> = {
+    1: { type: "Conjunction", typeNe: "संयोग", isSpecial: false },
+    2: { type: "2nd aspect", typeNe: "द्वितीय दृष्टि", isSpecial: false },
+    3: { type: "3rd aspect", typeNe: "तृतीय दृष्टि", isSpecial: true }, // Saturn special
+    4: { type: "4th aspect", typeNe: "चतुर्थ दृष्टि", isSpecial: true }, // Mars special
+    5: { type: "5th aspect", typeNe: "पंचम दृष्टि", isSpecial: true }, // Jupiter special
+    6: { type: "6th aspect", typeNe: "षष्ठ दृष्टि", isSpecial: false },
+    7: { type: "7th aspect", typeNe: "सप्तम दृष्टि", isSpecial: false }, // All planets
+    8: { type: "8th aspect", typeNe: "अष्टम दृष्टि", isSpecial: true }, // Mars special
+    9: { type: "9th aspect", typeNe: "नवम दृष्टि", isSpecial: true }, // Jupiter special
+    10: { type: "10th aspect", typeNe: "दशम दृष्टि", isSpecial: true }, // Saturn special
+    11: { type: "11th aspect", typeNe: "एकादश दृष्टि", isSpecial: false },
+    12: { type: "12th aspect", typeNe: "द्वादश दृष्टि", isSpecial: false },
+  };
+  return aspectMap[houseDiff] || { type: "Unknown", typeNe: "अज्ञात", isSpecial: false };
+}
+
+/**
+ * Calculate all aspects for all planets.
+ * Returns an object with aspects (cast by each planet) and aspectsReceived (received by each planet).
+ */
+function calculateAspects(planets: DetailedPlanet[]): {
+  aspects: Record<string, PlanetAspect[]>;
+  aspectsReceived: Record<string, PlanetAspect[]>;
+} {
+  const aspects: Record<string, PlanetAspect[]> = {};
+  const aspectsReceived: Record<string, PlanetAspect[]> = {};
+
+  // Initialize empty arrays for each planet
+  planets.forEach((p) => {
+    aspects[p.name] = [];
+    aspectsReceived[p.name] = [];
+  });
+
+  planets.forEach((planet) => {
+    const aspectedHouses = calculateAspectsFromPlanet(planet.longitude, planet.name);
+
+    aspectedHouses.forEach((targetHouse) => {
+      // Find all planets in the target house
+      const aspectedPlanets = planets.filter((p) => p.house === targetHouse);
+
+      aspectedPlanets.forEach((targetPlanet) => {
+        if (targetPlanet.name === planet.name) return; // Don't aspect self
+
+        const degreeDistance = calculateDegreeDistance(
+          planet.longitude,
+          targetPlanet.longitude,
+        );
+        const aspectInfo = getAspectType(targetHouse);
+
+        const aspectRecord: PlanetAspect = {
+          fromPlanet: planet.name,
+          fromPlanetNe: planet.nameNe,
+          fromHouse: planet.house,
+          toHouse: targetHouse,
+          aspectType: aspectInfo.type,
+          aspectTypeNe: aspectInfo.typeNe,
+          degreeDistance,
+          isSpecial: aspectInfo.isSpecial,
+        };
+
+        aspects[planet.name].push(aspectRecord);
+        aspectsReceived[targetPlanet.name].push(aspectRecord);
+      });
+    });
+  });
+
+  return { aspects, aspectsReceived };
+}
 
 export async function generateFullBirthChart(
   gregorianDate: Date,
@@ -741,6 +893,8 @@ export async function generateFullBirthChart(
         d9SignIndex: calculateD9Sign(long),
         d9SignName: RASHIS[calculateD9Sign(long)].en,
         d9SignNameNe: RASHIS[calculateD9Sign(long)].ne,
+        aspects: [],
+        aspectsReceived: [],
       });
     }
 
@@ -771,6 +925,8 @@ export async function generateFullBirthChart(
       d9SignIndex: calculateD9Sign(ketuLong),
       d9SignName: RASHIS[calculateD9Sign(ketuLong)].en,
       d9SignNameNe: RASHIS[calculateD9Sign(ketuLong)].ne,
+      aspects: [],
+      aspectsReceived: [],
     });
 
     // Check Combustion relative to Sun distance
@@ -968,6 +1124,132 @@ export async function generateFullBirthChart(
         : l >= rahuLong || l <= ketuLong_;
     });
 
+    // Calculate aspects for all planets
+    const { aspects, aspectsReceived } = calculateAspects(planets);
+
+    // 7. Calculate Transit Chart (current planetary positions)
+    const transitNow = new Date();
+    const transitJd = swe.julday(
+      transitNow.getUTCFullYear(),
+      transitNow.getUTCMonth() + 1,
+      transitNow.getUTCDate(),
+      transitNow.getUTCHours() +
+        transitNow.getUTCMinutes() / 60 +
+        transitNow.getUTCSeconds() / 3600
+    );
+    swe.set_sid_mode(swe.SE_SIDM_LAHIRI, 0, 0);
+
+    const transitPlanets: TransitPlanet[] = [];
+    const transitChart: Record<number, { name: string; nameNe: string }[]> = {};
+    for (let h = 1; h <= 12; h++) {
+      transitChart[h] = [];
+    }
+
+    const transitPlanetList: { id: number; name: string; nameNe: string }[] = [
+      { id: swe.SE_SUN, name: "Sun", nameNe: "सूर्य" },
+      { id: swe.SE_MOON, name: "Moon", nameNe: "चन्द्र" },
+      { id: swe.SE_MARS, name: "Mars", nameNe: "मङ्गल" },
+      { id: swe.SE_MERCURY, name: "Mercury", nameNe: "बुध" },
+      { id: swe.SE_JUPITER, name: "Jupiter", nameNe: "गुरु" },
+      { id: swe.SE_VENUS, name: "Venus", nameNe: "शुक्र" },
+      { id: swe.SE_SATURN, name: "Saturn", nameNe: "शनि" },
+      { id: swe.SE_MEAN_NODE, name: "Rahu", nameNe: "राहु" },
+    ];
+
+    for (const p of transitPlanetList) {
+      const pos = swe.calc_ut(transitJd, p.id, flags);
+      const long = (pos[0] + 360) % 360;
+      const signIndex = Math.floor(long / 30);
+      const house = ((signIndex - lagnaSignIndex + 12) % 12) + 1;
+
+      transitPlanets.push({
+        name: p.name,
+        nameNe: p.nameNe,
+        longitude: long,
+        dms: toDMS(long % 30),
+        signIndex,
+        signName: RASHIS[signIndex].en,
+        signNameNe: RASHIS[signIndex].ne,
+        house,
+        isRetrograde: pos[3] < 0,
+      });
+
+      transitChart[house].push({ name: p.name, nameNe: p.nameNe });
+    }
+
+    // Add Ketu
+    const rahuT = transitPlanets.find((p) => p.name === "Rahu")!;
+    const ketuLongT = (rahuT.longitude + 180) % 360;
+    const ketuSignIdxT = Math.floor(ketuLongT / 30);
+    const ketuHouseT = ((ketuSignIdxT - lagnaSignIndex + 12) % 12) + 1;
+
+    transitPlanets.push({
+      name: "Ketu",
+      nameNe: "केतु",
+      longitude: ketuLongT,
+      dms: toDMS(ketuLongT % 30),
+      signIndex: ketuSignIdxT,
+      signName: RASHIS[ketuSignIdxT].en,
+      signNameNe: RASHIS[ketuSignIdxT].ne,
+      house: ketuHouseT,
+      isRetrograde: true, // Ketu is always retrograde
+    });
+    transitChart[ketuHouseT].push({ name: "Ketu", nameNe: "केतु" });
+
+    // Calculate transit-to-natal aspects
+    const transitAspects: TransitAspect[] = [];
+    for (const tPlanet of transitPlanets) {
+      for (const nPlanet of planets) {
+        const diff = Math.abs(tPlanet.longitude - nPlanet.longitude);
+        const diffDeg = diff > 180 ? 360 - diff : diff;
+        // Check for conjunction (0°), opposition (180°), trine (120°), square (90°), sextile (60°)
+        const aspectTypes = [0, 60, 90, 120, 180];
+        const matchedAspect = aspectTypes.find((a) => Math.abs(diffDeg - a) < 5);
+        if (matchedAspect !== undefined) {
+          let aspectType = "";
+          let aspectTypeNe = "";
+          switch (matchedAspect) {
+            case 0:
+              aspectType = "Conjunction";
+              aspectTypeNe = "संयोग";
+              break;
+            case 60:
+              aspectType = "Sextile";
+              aspectTypeNe = "षष्ठ दृष्टि";
+              break;
+            case 90:
+              aspectType = "Square";
+              aspectTypeNe = "चतुर्थ दृष्टि";
+              break;
+            case 120:
+              aspectType = "Trine";
+              aspectTypeNe = "त्रिकोण दृष्टि";
+              break;
+            case 180:
+              aspectType = "Opposition";
+              aspectTypeNe = "सप्तम दृष्टि";
+              break;
+          }
+          transitAspects.push({
+            transitPlanet: tPlanet.name,
+            transitPlanetNe: tPlanet.nameNe,
+            natalPlanet: nPlanet.name,
+            natalPlanetNe: nPlanet.nameNe,
+            aspectType,
+            aspectTypeNe,
+            degreeDistance: diffDeg,
+          });
+        }
+      }
+    }
+
+    const transitChartData: TransitChartData = {
+      transitDate: transitNow.toISOString(),
+      planets: transitPlanets,
+      chart: transitChart,
+      aspects: transitAspects,
+    };
+
     return {
       birthDetails: {
         gregorianDate: gregorianDate.toISOString(),
@@ -1050,8 +1332,12 @@ export async function generateFullBirthChart(
       d10Chart,
       d12Chart,
       d30Chart,
+      aspects,
+      aspectsReceived,
+      transitChart: transitChartData,
     };
   } finally {
     swe.close();
   }
 }
+
