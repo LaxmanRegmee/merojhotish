@@ -1,19 +1,18 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function NotFound() {
-  const router = useRouter();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 text-foreground">
-      <div className="max-w-md w-full rounded-lg border border-border p-8 text-center">
-        <h2 className="text-xl font-semibold mb-2">Page not found</h2>
-        <p className="mb-6 text-muted-foreground">
-          The page you're looking for doesn't exist.
-        </p>
-        <Button onClick={() => router.push("/")}>Go back home</Button>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[300px] p-6 text-center">
+      <h2 className="mb-2 text-xl font-semibold">Page not found</h2>
+      <p className="mb-4 text-muted-foreground max-w-md">
+        We couldn&apos;t find the page you&apos;re looking for.
+      </p>
+      <Link
+        href="/"
+        className="px-4 py-2 rounded-lg border border-input bg-background hover:bg-accent text-accent-foreground"
+      >
+        Go back home
+      </Link>
     </div>
   );
 }

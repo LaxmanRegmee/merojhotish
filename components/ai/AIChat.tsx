@@ -47,21 +47,18 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
 
   const isNepali = language === "np";
 
-  // Default suggestions from Figma design, translated by language
+  // Default suggestions from Figma design
   const defaultSuggestions = useMemo(
-    () =>
+    () => [
       isNepali
-        ? [
-            "तपाईंको करियर कस्तो छ?",
-            "मलाई 5 वर्षभित्र विवाह हुन्छ कि?",
-            "मंगल दोष के हो?",
-          ]
-        : [
-            "What is my career like?",
-            "am i gonna be married in next 5 years?",
-            "what does mangal dosha mean?",
-          ],
-    [language],
+        ? "तपाईंको करियर कस्तो छ?"
+        : "What is my career like?",
+      isNepali
+        ? "मलाई 5 वर्षभित्र विवाह हुन्छ कि?"
+        : "am i gonna be married in next 5 years?",
+      isNepali ? "मंगल दोष के हो?" : "what does mangal dosha mean?",
+    ],
+    [isNepali],
   );
 
   // Auto-scroll to bottom when new messages arrive, but only if user hasn't scrolled up
