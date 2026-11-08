@@ -23,7 +23,7 @@ export default function KundaliChartsView({ report, language }: Props) {
       ]),
     );
   return (
-    <div className="grid h-auto w-full grid-cols-1 gap-4 bg-gray-50 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
+    <div className="overflow-x-auto grid h-auto w-full grid-cols-1 gap-4 bg-gray-50 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
       {/* D1 Rashi Kundali */}
       <NorthIndianChart
         title={isNepali ? "लग्न कुण्डली (D1)" : "Ascendant Chart (D1)"}

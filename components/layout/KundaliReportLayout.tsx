@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Language } from "@/components/layout/LanguageSwitcher";
+import { Hamburger, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 interface KundaliReportLayoutProps {
@@ -25,6 +26,7 @@ export default function KundaliReportLayout({
   language,
 }: KundaliReportLayoutProps) {
   const [activeSection, setActiveSection] = useState("charts");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pendingSectionRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -88,7 +90,41 @@ export default function KundaliReportLayout({
 
   return (
     <div role="main" className="mx-auto flex w-full items-start bg-background">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-border bg-card px-5 py-16 md:block">
+      {/* Mobile sidebar toggle */}
+      {!sidebarOpen && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="lg"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          className="absolute left-5 top-5 z-20 block md:hidden"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Hamburger size={20} aria-hidden="true" />
+        </Button>
+      )}
+
+      <aside
+        className={`sticky top-0 ${sidebarOpen ? "block" : "hidden"} h-screen w-60 shrink-0 border-r border-border bg-card px-5 py-16 md:block`}
+      >
+        {sidebarOpen && (
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-sm font-semibold text-foreground">
+              Report sections
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              aria-label="Close navigation menu"
+              onClick={() => setSidebarOpen(false)}
+              className="text-sm"
+            >
+              <X size={20} aria-hidden="true" />
+            </Button>
+          </div>
+        )}
         <nav
           className="relative"
           aria-label={isNepali ? "रिपोर्टका भागहरू" : "Report sections"}
@@ -105,7 +141,12 @@ export default function KundaliReportLayout({
                 <Button
                   key={section.id}
                   variant="ghost"
-                  onClick={() => scrollToSection(section.id)}
+                  onClick={() => {
+                    scrollToSection(section.id);
+                    if (typeof window !== "undefined" && window.innerWidth < 768) {
+                      setSidebarOpen(false);
+                    }
+                  }}
                   className={`flex w-full items-start justify-start text-sm hover:bg-transparent! hover:text-foreground! ${
                     isActive
                       ? "font-semibold text-foreground"

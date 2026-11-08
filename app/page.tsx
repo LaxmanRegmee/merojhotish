@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { CakeIcon } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
@@ -13,6 +14,7 @@ import LanguageSwitcher, { type Language } from "@/components/layout/LanguageSwi
 import KundaliReportLayout from "@/components/layout/KundaliReportLayout";
 import AISummarySection from "@/components/ai/AISummarySection";
 import HeaderNavigation from "@/components/layout/HeaderNavigation";
+import DarkModeToggle from "@/components/layout/DarkModeToggle";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
@@ -26,6 +28,75 @@ export default function Home() {
     return saved === "np" || saved === "en" ? saved : "en";
   });
   const isNepali = language === "np";
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("darkMode") === "true";
+  });
+
+  type InitialForm = {
+    bsYear: number;
+    bsMonth: number;
+    bsDay: number;
+    birthTime: string;
+    city: string;
+  };
+
+  function parseInitialForm(): InitialForm | null {
+    const bsYear = Number(searchParams.get("bsYear"));
+    const bsMonth = Number(searchParams.get("bsMonth"));
+    const bsDay = Number(searchParams.get("bsDay"));
+    const birthTime = searchParams.get("birthTime") ?? "";
+    const city = searchParams.get("city") ?? "";
+
+    if (
+      !Number.isInteger(bsYear) ||
+      !Number.isInteger(bsMonth) ||
+      !Number.isInteger(bsDay) ||
+      !/^\d{2}:\d{2}$/.test(birthTime) ||
+      !city
+    ) {
+      return null;
+    }
+
+    return { bsYear, bsMonth, bsDay, birthTime, city };
+  }
+
+  const initialForm = parseInitialForm();
+
+  useEffect(() => {
+    if (!initialForm || chartData || loading) return;
+    const form = initialForm;
+    async function autoGenerate() {
+      const formData = new FormData();
+      formData.set("bsYear", String(form.bsYear));
+      formData.set("bsMonth", String(form.bsMonth));
+      formData.set("bsDay", String(form.bsDay));
+      formData.set("birthTime", form.birthTime);
+      formData.set("city", form.city);
+      try {
+        const result = await generateKundaliAction(formData);
+        setChartData(result);
+      } catch {
+        setError(
+          isNepali
+            ? "कुण्डली बनाउन सकिएन।"
+            : "Could not create the birth chart from the shared link.",
+        );
+      }
+    }
+    autoGenerate();
+  }, [initialForm, chartData, loading, isNepali]);
+
+  useEffect(() => {
+    localStorage.setItem("darkMode", String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -34,6 +105,19 @@ export default function Home() {
     try {
       const result = await generateKundaliAction(formData);
       setChartData(result);
+
+      const bsYear = formData.get("bsYear");
+      const bsMonth = formData.get("bsMonth");
+      const bsDay = formData.get("bsDay");
+      const birthTime = formData.get("birthTime");
+      const city = formData.get("city");
+      const params = new URLSearchParams();
+      if (bsYear) params.set("bsYear", String(bsYear));
+      if (bsMonth) params.set("bsMonth", String(bsMonth));
+      if (bsDay) params.set("bsDay", String(bsDay));
+      if (birthTime) params.set("birthTime", String(birthTime));
+      if (city) params.set("city", String(city));
+      router.replace(`?${params.toString()}`);
     } catch (submissionError) {
       setChartData(null);
       setError(
@@ -62,6 +146,7 @@ export default function Home() {
         />
         <HeaderNavigation />
         <LanguageSwitcher language={language} onLanguageChange={setLanguage} />
+        <DarkModeToggle darkMode={darkMode} onDarkModeChange={setDarkMode} />
       </header>
 
       <section>
@@ -113,6 +198,17 @@ export default function Home() {
                         : "The chart maps the exact geocentric celestial snapshot at birth, establishing the native's physical constitution, core life path and key patterns."}
                     </p>
                   </div>
+                  <div className="flex gap-2 mb-6">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                      }}
+                    >
+                      {isNepali ? "लिंक प्रतिलिपि गर्नुहोस्" : "Copy link"}
+                    </Button>
+                  </div>
                   <KundaliChartsView report={chartData} language={language} />
                 </section>
 
@@ -132,6 +228,7 @@ export default function Home() {
               onSubmit={handleSubmit}
               loading={loading}
               language={language}
+              initialForm={initialForm ?? undefined}
             />
           )}
           {error && !chartData && (

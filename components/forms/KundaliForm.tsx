@@ -26,17 +26,30 @@ interface FormProps {
   onSubmit: (formData: FormData) => void;
   loading: boolean;
   language: Language;
+  initialForm?: {
+    bsYear: number;
+    bsMonth: number;
+    bsDay: number;
+    birthTime: string;
+    city: string;
+  };
 }
 
 export default function KundaliForm({
   onSubmit,
   loading,
   language,
+  initialForm,
 }: FormProps) {
   const isNepali = language === "np";
-  const [birthDate, setBirthDate] = useState({ year: 2059, month: 4, day: 1 });
-  const [birthTime, setBirthTime] = useState("21:23");
-  const [city, setCity] = useState("");
+  const [birthDate, setBirthDate] = useState(() => {
+    if (initialForm) {
+      return { year: initialForm.bsYear, month: initialForm.bsMonth, day: initialForm.bsDay };
+    }
+    return { year: 2059, month: 4, day: 1 };
+  });
+  const [birthTime, setBirthTime] = useState(() => initialForm?.birthTime ?? "21:23");
+  const [city, setCity] = useState(() => initialForm?.city ?? "");
 
   return (
     <form action={onSubmit} className="flex flex-col pt-8 md:pt-16 gap-6">
