@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { CakeIcon } from "@phosphor-icons/react";
@@ -17,7 +17,7 @@ import DarkModeToggle from "@/components/layout/DarkModeToggle";
 
 type ChartData = Awaited<ReturnType<typeof generateKundaliAction>>;
 
-export default function Home() {
+function Home() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -195,5 +195,13 @@ export default function Home() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Home />
+    </Suspense>
   );
 }
