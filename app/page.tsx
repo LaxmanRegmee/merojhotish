@@ -8,7 +8,7 @@ import { generateKundaliAction } from "@/app/action";
 import logo from "@/lib/logo.png";
 import { saveChart } from "@/lib/chart-storage";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import KundaliForm from "@/components/forms/KundaliForm";
 import KundaliChartsView from "@/components/charts/KundaliChartsView";
 import FullChartDetails from "@/components/charts/FullChartDetails";
@@ -179,9 +179,10 @@ function Home() {
     try {
       saveChart(chartData, birthDetails);
       setSavedOk(true);
-      toast.success("Chart saved!");
+      setTimeout(() => setSavedOk(false), 3000);
     } catch {
-      toast.error("Failed to save chart");
+      setSaving(false);
+      setSavedOk(false);
     } finally {
       setSaving(false);
     }
@@ -272,10 +273,17 @@ function Home() {
                     </Button>
                   </div>
                   {savedOk && (
-                    <p className="mx-auto mt-2 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 px-3 py-2 text-xs text-secondary-foreground">
-                      <Check size={14} aria-hidden="true" />
-                      Chart saved to your library.
-                    </p>
+                    <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm">
+                      <Alert className="bg-background border-border shadow-lg">
+                        <AlertTitle className="flex items-center gap-2">
+                          <Check className="size-4" />
+                          Chart saved!
+                        </AlertTitle>
+                        <AlertDescription>
+                          Your birth chart has been saved successfully.
+                        </AlertDescription>
+                      </Alert>
+                    </div>
                   )}
                   <KundaliReportLayout>
                     <div className="report-enter w-auto flex flex-col">
