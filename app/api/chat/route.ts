@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.NVIDIA_MODEL || "mistralai/mistral-nemo-instruct-2407",
+        model: process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-lightning-30b-a3b",
         messages: [
           {
             role: "system",
