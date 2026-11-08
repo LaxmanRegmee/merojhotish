@@ -17,7 +17,7 @@ export default function HeaderNavigation() {
   return (
     <nav aria-label="Primary navigation" className="relative z-20">
       {/* Desktop navigation: always visible on md+ */}
-      <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
+      <div className="relative z-20 hidden md:flex flex-1 items-center justify-center gap-1">
         {navigationItems.map((item) => {
           // Items with href render as links; Tools stays a button (submenu trigger)
           if (item.href && !item.hasSubmenu) {

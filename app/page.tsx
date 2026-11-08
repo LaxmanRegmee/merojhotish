@@ -169,17 +169,6 @@ export default function Home() {
                       The chart maps the exact geocentric celestial snapshot at birth, establishing the native&apos;s physical constitution, core life path and key patterns.
                     </p>
                   </div>
-                  <div className="flex gap-2 mb-6">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                      }}
-                    >
-                      Copy link
-                    </Button>
-                  </div>
                   <KundaliChartsView report={chartData} />
                 </section>
 

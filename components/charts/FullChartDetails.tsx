@@ -65,7 +65,7 @@ export default function FullChartDetails({
 
       <Card
         id="avakahada"
-        className="scroll-mt-6 py-12 px-4 md:px-16 md:py-16 w-auto h-auto rounded-none bg-gray-50"
+        className="scroll-mt-6 py-12 px-4 md:px-16 md:py-16 w-auto h-auto rounded-none bg-background"
       >
         <CardContent className="w-auto min-h-52 md:h-auto p-0">
           <AvakahadaChakra data={report.avakahada} />

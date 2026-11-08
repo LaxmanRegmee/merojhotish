@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function DarkModeToggle() {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("darkMode") === "true";
-  });
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("darkMode");
+    if (saved !== null) {
+      const val = saved === "true";
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDarkMode(val);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("darkMode", String(darkMode));
@@ -17,32 +25,15 @@ export default function DarkModeToggle() {
     }
   }, [darkMode]);
 
-  function toggleDarkMode() {
-    setDarkMode((prev) => !prev);
-  }
-
   return (
-    <div
-      className="flex h-5 items-center gap-2"
-      aria-label={darkMode ? "Dark mode" : "Light mode"}
-    >
-      <span className="text-sm font-medium leading-5 opacity-50">🌙</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={darkMode}
-        aria-label={
-          darkMode ? "Switch to light mode" : "Switch to dark mode"
-        }
-        onClick={toggleDarkMode}
-        className={`ui-control relative flex h-4.5 w-8 shrink-0 items-center rounded-full border-0 p-px ${darkMode ? "justify-end bg-primary" : "justify-start bg-input"}`}
-      >
-        <span
-          aria-hidden="true"
-          className={`size-4 rounded-full shadow-sm ${darkMode ? "bg-primary-foreground" : "bg-background"}`}
-        />
-      </button>
-      <span className="text-sm font-medium leading-5 opacity-50">☀️</span>
+    <div className="flex items-center gap-3">
+      <Label>Light</Label>
+      <Switch
+        checked={darkMode}
+        onCheckedChange={setDarkMode}
+        aria-label="Toggle dark mode"
+      />
+      <Label>Dark</Label>
     </div>
   );
 }

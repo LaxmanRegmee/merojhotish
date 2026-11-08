@@ -20,7 +20,7 @@ export default function KundaliChartsView({ report }: Props) {
       ]),
     );
   return (
-    <div className="overflow-x-auto grid h-auto w-full grid-cols-1 gap-4 bg-gray-50 px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
+    <div className="overflow-x-auto grid h-auto w-full grid-cols-1 gap-4 bg-background px-4 py-10 sm:grid-cols-2 sm:px-8 sm:py-12">
       {/* D1 Rashi Kundali */}
       <NorthIndianChart
         title="Ascendant Chart (D1)"
