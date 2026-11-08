@@ -15,6 +15,7 @@ export default function LanguageSwitcher({
 
   function toggleLanguage() {
     const nextLanguage = isNepali ? "en" : "np";
+    localStorage.setItem("language", nextLanguage);
     onLanguageChange?.(nextLanguage);
   }
 

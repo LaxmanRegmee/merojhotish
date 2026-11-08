@@ -105,8 +105,8 @@ export interface CompleteBirthChartReport {
   planets: DetailedPlanet[];
   dashaTimeline: DashaPeriod[];
   doshas: DoshaAnalysis;
-  d1Chart: Record<number, string[]>; // House 1..12 -> Planet names
-  d9Chart: Record<number, string[]>; // House 1..12 in Navamsha
+  d1Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 -> Planet names
+  d9Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Navamsha
 }
 
 // --- LOOKUP TABLES & ASTROLOGICAL CONSTANTS ---
@@ -668,17 +668,17 @@ export async function generateFullBirthChart(
     });
 
     // 3. Build D1 and D9 Chart House Arrays
-    const d1Chart: Record<number, string[]> = {};
-    const d9Chart: Record<number, string[]> = {};
+    const d1Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d9Chart: Record<number, { name: string; nameNe: string }[]> = {};
     for (let h = 1; h <= 12; h++) {
       d1Chart[h] = [];
       d9Chart[h] = [];
     }
 
     planets.forEach((p) => {
-      d1Chart[p.house].push(p.nameNe);
+      d1Chart[p.house].push({ name: p.name, nameNe: p.nameNe });
       const d9House = ((p.d9SignIndex - lagnaD9SignIndex + 12) % 12) + 1;
-      d9Chart[d9House].push(p.nameNe);
+      d9Chart[d9House].push({ name: p.name, nameNe: p.nameNe });
     });
 
     // 4. Avakahada Chakra (from Moon position)

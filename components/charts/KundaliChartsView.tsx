@@ -13,17 +13,13 @@ interface Props {
 
 export default function KundaliChartsView({ report, language }: Props) {
   const isNepali = language === "np";
-  const chartLabels = (chart: Record<number, string[]>) =>
+  const chartLabels = (
+    chart: Record<number, { name: string; nameNe: string }[]>,
+  ) =>
     Object.fromEntries(
       Object.entries(chart).map(([house, planets]) => [
         house,
-        planets.map((planetName) => {
-          if (isNepali) return planetName;
-          return (
-            report.planets.find((planet) => planet.nameNe === planetName)
-              ?.name ?? planetName
-          );
-        }),
+        planets.map((planet) => (isNepali ? planet.nameNe : planet.name)),
       ]),
     );
   return (

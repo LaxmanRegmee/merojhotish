@@ -193,3 +193,63 @@ button:disabled {
   background: var(--primary);
   color: var(--primary-foreground);
 }
+
+@media print {
+  /* Hide everything that isn't chart content so the printed page contains only the chart. */
+  nav,
+  header,
+  footer,
+  [role="navigation"],
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  form,
+  .no-print,
+  [hidden] {
+    display: none !important;
+  }
+
+  /* Page setup: clean margins, avoid blank second page from overflow. */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0a0a0a !important;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* Keep chart colors visible on screen-like print (SVG/canvas render as vector/bitmap). */
+  .chart, [data-chart], [class*="chart-"] {
+    background: transparent !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Chart area fills the usable page width, dark text on white background. */
+  .chart-content,
+  [data-chart-content],
+  main {
+    background: #ffffff !important;
+    color: #0a0a0a !important;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+
+  /* Avoid orphaned/widowed chart sections splitting across pages. */
+  .chart-section,
+  .chart-panel {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
