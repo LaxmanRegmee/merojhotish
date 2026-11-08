@@ -18,7 +18,7 @@ function getProviderErrorMessage(payload: string, status: number) {
 }
 
 export async function POST(req: Request) {
-  const { messages, reportData, language = "en" } = await req.json();
+  const { messages, reportData } = await req.json();
 
   const response = await fetch(
     "https://integrate.api.nvidia.com/v1/chat/completions",
@@ -29,11 +29,11 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.NVIDIA_MODEL || "mistralai/mistral-nemo-instruct-2407",
+        model: process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-lightning-30b-a3b",
         messages: [
           {
             role: "system",
-            content: buildAstrologyChatPrompt(reportData, language),
+            content: buildAstrologyChatPrompt(reportData),
           },
           ...messages,
         ],

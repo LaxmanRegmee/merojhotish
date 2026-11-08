@@ -1,6 +1,5 @@
 "use client";
 
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import AISummaryGenerator from "@/components/ai/AISummaryGenerator";
 import AIChat from "@/components/ai/AIChat";
 import { Circle, FlutedGlass, Shader } from "shaders/react";
@@ -8,19 +7,17 @@ import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface AISummarySectionProps {
   reportData: CompleteBirthChartReport;
-  language?: Language;
 }
 
 export default function AISummarySection({
   reportData,
-  language = "en",
 }: AISummarySectionProps) {
   return (
     <section id="ai-summary">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         {/* Left Panel - AI Summary Generator */}
         <div className="relative justify-content justify-center  border-r border-border px-6 py-12  min-h-172 md:px-8 md:py-8">
-          <AISummaryGenerator reportData={reportData} language={language} />
+          <AISummaryGenerator reportData={reportData} />
           <Shader className="absolute w-full h-full inset-0 z-0">
             <FlutedGlass
               waveFrequency={10.6}
@@ -36,7 +33,7 @@ export default function AISummarySection({
 
         {/* Right Panel - AI Chat */}
         <div className="h-full min-h-172">
-          <AIChat reportData={reportData} language={language} />
+          <AIChat reportData={reportData} />
         </div>
       </div>
     </section>
