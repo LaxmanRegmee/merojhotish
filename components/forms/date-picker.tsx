@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 
 interface NepaliDatePickerProps {
+  id?: string;
   year: number;
   month: number;
   day: number;
@@ -28,6 +29,7 @@ interface NepaliDatePickerProps {
 }
 
 export function NepaliDatePicker({
+  id,
   year,
   month,
   day,
@@ -58,6 +60,7 @@ export function NepaliDatePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           type="button"
           variant="outline"
           className={cn(
@@ -73,7 +76,7 @@ export function NepaliDatePicker({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-53 rounded-lg border border-border bg-white p-2 shadow-[0_4px_10px_rgba(0,0,0,0.14)]"
+        className="w-[212px] rounded-lg border border-border bg-popover p-2 shadow-md"
       >
         <div className="mb-2 flex h-8 items-center justify-between">
           <button
@@ -94,7 +97,7 @@ export function NepaliDatePicker({
             >
               <SelectTrigger
                 aria-label="B.S. month"
-                className="h-7 w-auto gap-0 border-0 bg-transparent px-1 text-sm shadow-none"
+                className="h-8 rounded-lg border border-border px-2 text-sm"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -114,7 +117,7 @@ export function NepaliDatePicker({
             >
               <SelectTrigger
                 aria-label="B.S. year"
-                className="h-7 w-14.5 border-0 bg-transparent px-1 text-sm shadow-none"
+                className="h-8 rounded-lg border border-border px-2 text-sm"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -165,7 +168,7 @@ export function NepaliDatePicker({
                   setOpen(false);
                 }}
                 className={cn(
-                  "ui-picker-option mx-auto flex size-7 items-center justify-center rounded-full text-sm",
+                  "ui-picker-option mx-auto flex items-center justify-center rounded-full text-sm min-h-[44px] min-w-[44px]",
                 )}
                 data-selected={day === dayNumber}
               >

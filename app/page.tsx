@@ -3,11 +3,12 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { CakeIcon, Download } from "@phosphor-icons/react";
+import { CakeIcon, Check, Download } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
 import logo from "@/lib/logo.png";
 import { saveChart } from "@/lib/chart-storage";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import KundaliForm from "@/components/forms/KundaliForm";
 import KundaliChartsView from "@/components/charts/KundaliChartsView";
 import FullChartDetails from "@/components/charts/FullChartDetails";
@@ -24,6 +25,8 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedChartsOpen, setSavedChartsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedOk, setSavedOk] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -150,7 +153,7 @@ function Home() {
     }
   }
 
-  function handleSaveChart() {
+  async function handleSaveChart() {
     if (!chartData) return;
 
     const bsYear = searchParams.get("bsYear");
@@ -171,7 +174,17 @@ function Home() {
       lon: 0,
     };
 
-    saveChart(chartData, birthDetails);
+    setSaving(true);
+    setSavedOk(false);
+    try {
+      saveChart(chartData, birthDetails);
+      setSavedOk(true);
+      toast.success("Chart saved!");
+    } catch {
+      toast.error("Failed to save chart");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -252,12 +265,18 @@ function Home() {
                       size="sm"
                       onClick={handleSaveChart}
                       className="text-xs"
-                      disabled={loading}
+                      disabled={loading || saving}
                     >
                       <Download size={14} aria-hidden="true" />
-                      {loading ? "Saving..." : "Save chart"}
+                      {saving ? "Saving…" : savedOk ? "Saved!" : "Save chart"}
                     </Button>
                   </div>
+                  {savedOk && (
+                    <p className="mx-auto mt-2 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 px-3 py-2 text-xs text-secondary-foreground">
+                      <Check size={14} aria-hidden="true" />
+                      Chart saved to your library.
+                    </p>
+                  )}
                   <KundaliReportLayout>
                     <div className="report-enter w-auto flex flex-col">
                       <section id="charts" className="scroll-mt-6">

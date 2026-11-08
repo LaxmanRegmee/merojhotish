@@ -48,7 +48,13 @@ export default function KundaliForm({
   const [city, setCity] = useState(() => initialForm?.city ?? "");
 
   return (
-    <form action={onSubmit} className="flex flex-col pt-8 md:pt-16 gap-6">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(new FormData(e.currentTarget as HTMLFormElement));
+      }}
+      className="flex flex-col pt-8 md:pt-16 gap-6"
+    >
       <Card className="mx-auto w-full max-w-89 md:max-w-96.75 overflow-visible rounded-xl border border-border">
         <CardHeader className=" px-4 pb-0 pt-4 flex h-auto w-full flex-col">
           <CardTitle className="w-full text-sm leading-6 font-semibold">
@@ -61,17 +67,13 @@ export default function KundaliForm({
 
         <CardContent className="flex flex-col gap-3 px-4 py-3">
           <div className="flex h-15 flex-col gap-2">
-            <Label htmlFor="bsYear">
-              Date of birth
-            </Label>
+            <Label htmlFor="bsDate">Date of birth</Label>
             <NepaliDatePicker
+              id="bsDate"
               {...birthDate}
               maxDay={getMaxBSDay(birthDate.month)}
               onChange={setBirthDate}
             />
-            <input type="hidden" name="bsYear" value={birthDate.year} />
-            <input type="hidden" name="bsMonth" value={birthDate.month} />
-            <input type="hidden" name="bsDay" value={birthDate.day} />
           </div>
 
           <div className="flex h-22 flex-col gap-2">

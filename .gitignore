@@ -20,6 +20,9 @@
 /build
 
 # misc
+./docs
+./agents
+./opencode
 .DS_Store
 *.pem
 
