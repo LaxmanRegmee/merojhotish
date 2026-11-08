@@ -20,7 +20,11 @@ export default function Home() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return "en";
+    const saved = localStorage.getItem("language") as Language | null;
+    return saved === "np" || saved === "en" ? saved : "en";
+  });
   const isNepali = language === "np";
 
   async function handleSubmit(formData: FormData) {

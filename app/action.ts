@@ -26,9 +26,23 @@ export async function generateKundaliAction(formData: FormData) {
     throw new Error("Please enter a valid birth date, time, and birthplace.");
   }
 
+  const [hours, minutes] = birthTime.split(":").map(Number);
+
+  if (
+    !Number.isInteger(hours) ||
+    hours < 0 ||
+    hours > 23 ||
+    !Number.isInteger(minutes) ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    throw new Error(
+      "Please enter a valid birth time (hour 00-23, minute 00-59).",
+    );
+  }
+
   // Convert BS to AD Date
   const adDate = bsToAd(bsYear, bsMonth, bsDay);
-  const [hours, minutes] = birthTime.split(":").map((v) => parseInt(v, 10));
 
   // Nepal Standard Time is UTC+5:45. Build a UTC timestamp for the local
   // Nepal time, then subtract the offset to get true UTC.
