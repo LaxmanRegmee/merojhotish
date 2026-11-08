@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { chartData, language = "en" } = await req.json();
+    const { chartData } = await req.json();
 
     if (!chartData) {
       return NextResponse.json(
@@ -34,13 +34,11 @@ export async function POST(req: Request) {
           messages: [
             {
               role: "system",
-              content: `You are an expert Vedic astrologer who writes concise, easy-to-understand summaries in ${
-                language === "np" ? "Nepali" : "English"
-              }. Reply only in that language.`,
+              content: `You are an expert Vedic astrologer who writes concise, easy-to-understand summaries in English. Reply only in English.`,
             },
             {
               role: "user",
-              content: buildAstrologySummaryPrompt(chartData, language),
+              content: buildAstrologySummaryPrompt(chartData),
             },
           ],
           temperature: 1,

@@ -16,24 +16,20 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import AvakahadaChakra from "@/components/charts/AvakahadaChakra";
-import { MAJOR_NEPALI_CITIES, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
+import { MAJOR_NEPALI_CITIES } from "@/lib/bs-converter";
 import type {
   CompleteBirthChartReport,
   DashaPeriod,
 } from "@/lib/jyotish-engine";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import type { ReactNode } from "react";
 
 interface FullChartDetailsProps {
   report: CompleteBirthChartReport;
-  language: Language;
 }
 
 export default function FullChartDetails({
   report,
-  language,
 }: FullChartDetailsProps) {
-  const isNepali = language === "np";
   const today = new Date();
   return (
     <div className="flex flex-col">
@@ -42,61 +38,28 @@ export default function FullChartDetails({
         className="rounded-none border-0 bg-transparent shadow-none hover:border-transparent"
       >
         <CardContent className="grid grid-cols-1 border-y border-border p-0 sm:grid-cols-2 sm:[&>*:nth-child(even)]:border-r-0 lg:grid-cols-3 lg:[&>*:nth-child(even)]:border-r lg:[&>*:nth-child(3n)]:border-r-0">
+          <Detail label="Birth sign" value={report.avakahada.rashi} />
+          <Detail label="Nakshatra" value={report.panchang.nakshatra} />
           <Detail
-            label={isNepali ? "जन्म राशि" : "Birth sign"}
-            value={isNepali ? report.avakahada.rashiNe : report.avakahada.rashi}
+            label="Ascendant"
+            value={`${report.lagna.signName} (${report.lagna.dms})`}
+          />
+          <Detail label="Tithi" value={report.panchang.tithiName} />
+          <Detail
+            label="Birth date"
+            value={formatBirthDate(report.birthDetails.gregorianDate)}
           />
           <Detail
-            label={isNepali ? "नक्षत्र" : "Nakshatra"}
-            value={
-              isNepali ? report.panchang.nakshatraNe : report.panchang.nakshatra
-            }
-          />
-          <Detail
-            label={isNepali ? "लग्न" : "Ascendant"}
-            value={`${isNepali ? report.lagna.signNameNe : report.lagna.signName} (${report.lagna.dms})`}
-          />
-          <Detail
-            label={isNepali ? "तिथि" : "Tithi"}
-            value={
-              isNepali ? report.panchang.tithiNameNe : report.panchang.tithiName
-            }
-          />
-          <Detail
-            label={isNepali ? "जन्म मिति" : "Birth date"}
-            value={formatBirthDate(
-              report.birthDetails.gregorianDate,
-              report.birthDetails.nepaliDate,
-              isNepali,
-            )}
-          />
-          <Detail
-            label={isNepali ? "स्थान" : "Location"}
+            label="Location"
             value={formatBirthLocation(
               report.birthDetails.latitude,
               report.birthDetails.longitude,
-              isNepali,
             )}
           />
-          <Detail
-            label={isNepali ? "पक्ष" : "Paksha"}
-            value={isNepali ? report.panchang.pakshaNe : report.panchang.paksha}
-          />
+          <Detail label="Paksha" value={report.panchang.paksha} />
 
-          <Detail
-            label={isNepali ? "योग" : "Yoga"}
-            value={
-              isNepali ? report.panchang.yogaNameNe : report.panchang.yogaName
-            }
-          />
-          <Detail
-            label={isNepali ? "करण" : "Karana"}
-            value={
-              isNepali
-                ? report.panchang.karanaNameNe
-                : report.panchang.karanaName
-            }
-          />
+          <Detail label="Yoga" value={report.panchang.yogaName} />
+          <Detail label="Karana" value={report.panchang.karanaName} />
         </CardContent>
       </Card>
 
@@ -105,7 +68,7 @@ export default function FullChartDetails({
         className="scroll-mt-6 py-12 px-4 md:px-16 md:py-16 w-auto h-auto rounded-none bg-gray-50"
       >
         <CardContent className="w-auto min-h-52 md:h-auto p-0">
-          <AvakahadaChakra data={report.avakahada} language={language} />
+          <AvakahadaChakra data={report.avakahada} />
         </CardContent>
       </Card>
 
@@ -118,25 +81,25 @@ export default function FullChartDetails({
             <thead className="border-b  border-border bg-secondary">
               <tr>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "ग्रह" : "Planet"}
+                  Planet
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "राशि" : "Sign"}
+                  Sign
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "अंश" : "Degree"}
+                  Degree
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "भाव" : "House"}
+                  House
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "नक्षत्र" : "Nakshatra"}
+                  Nakshatra
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "नवांश" : "Navamsha"}
+                  Navamsha
                 </th>
                 <th className="px-4 py-4 text-center font-bold text-muted-foreground">
-                  {isNepali ? "अवस्था" : "Status"}
+                  Status
                 </th>
               </tr>
             </thead>
@@ -147,10 +110,10 @@ export default function FullChartDetails({
                   className="border-b border-border last:border-0"
                 >
                   <td className="px-4 py-4 text-center font-bold text-card-foreground">
-                    {isNepali ? planet.nameNe : planet.name}
+                    {planet.name}
                   </td>
                   <td className="px-4 py-4 text-center text-card-foreground">
-                    {isNepali ? planet.signNameNe : planet.signName}
+                    {planet.signName}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-center text-card-foreground">
                     {planet.dms}
@@ -159,23 +122,16 @@ export default function FullChartDetails({
                     {planet.house}
                   </td>
                   <td className="px-4 py-4 text-center text-card-foreground">
-                    {isNepali ? planet.nakshatraNameNe : planet.nakshatraName} (
-                    {planet.pada})
+                    {planet.nakshatraName} ({planet.pada})
                   </td>
                   <td className="px-4 py-4 text-center text-card-foreground">
-                    {isNepali ? planet.d9SignNameNe : planet.d9SignName}
+                    {planet.d9SignName}
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-center text-card-foreground">
-                    {planet.isRetrograde
-                      ? isNepali
-                        ? "वक्र "
-                        : "Retrograde "
-                      : ""}
-                    {planet.isCombust ? (isNepali ? "अस्त" : "Combust") : ""}
+                    {planet.isRetrograde ? "Retrograde " : ""}
+                    {planet.isCombust ? "Combust" : ""}
                     {!planet.isRetrograde && !planet.isCombust
-                      ? isNepali
-                        ? "सामान्य"
-                        : "Normal"
+                      ? "Normal"
                       : ""}
                   </td>
                 </tr>
@@ -191,24 +147,17 @@ export default function FullChartDetails({
           className="scroll-mt-6 border-b border-border px-4 py-12 sm:px-10 lg:border-b-0 lg:border-r lg:px-16 lg:py-16"
         >
           <h2 className="text-base font-normal leading-6 text-muted-foreground">
-            {isNepali ? "विंशोत्तरी महादशा" : "Vimshottari dasha"}
+            Vimshottari dasha
           </h2>
           <div className="mt-3 flex flex-col gap-2">
             {report.dashaTimeline.map((period) => (
               <DashaItem
                 key={`${period.planet}-${period.startDate}`}
                 icon={getDashaIcon(period.planet)}
-                title={
-                  isNepali
-                    ? `${period.planetNe} महादशा`
-                    : `${period.planet} dasha`
-                }
+                title={`${period.planet} dasha`}
                 description={`${period.startDate} - ${period.endDate}`}
                 status={getDashaStatus(period, today)}
-                statusLabel={getDashaStatusLabel(
-                  getDashaStatus(period, today),
-                  isNepali,
-                )}
+                statusLabel={getDashaStatusLabel(getDashaStatus(period, today))}
               />
             ))}
           </div>
@@ -219,7 +168,7 @@ export default function FullChartDetails({
           className="scroll-mt-6 px-4 py-12 sm:px-10 lg:px-16 lg:py-16"
         >
           <h2 className="text-base font-normal leading-6 text-muted-foreground">
-            {isNepali ? "दोष एवं योग" : "Doshas and yogas"}
+            Doshas and yogas
           </h2>
           <div className="mt-3 flex flex-col ">
             <InsightItem
@@ -227,14 +176,10 @@ export default function FullChartDetails({
                 <GenderMaleIcon size={32} color="foreground" weight="regular" />
               }
               title={
-                isNepali
-                  ? `मङ्गल दोष · ${report.doshas.isManglik ? "छ" : "छैन"}`
-                  : `Manglik Dosha · ${report.doshas.isManglik ? "Present" : "Not present"}`
+                `Manglik Dosha · ${report.doshas.isManglik ? "Present" : "Not present"}`
               }
               description={
-                isNepali
-                  ? report.doshas.manglikDetailsNe
-                  : `Mangal Dosh arises when Mars, known as Mangal Graha, is placed in some specific house in the native birth chart. Individuals who have this placement are called Manglik. It is ${report.doshas.isManglik ? "present" : "not present"} in this chart.`
+                `Mangal Dosh arises when Mars, known as Mangal Graha, is placed in some specific house in the native birth chart. Individuals who have this placement are called Manglik. It is ${report.doshas.isManglik ? "present" : "not present"} in this chart.`
               }
             />
             <InsightItem
@@ -242,14 +187,10 @@ export default function FullChartDetails({
                 <AsclepiusIcon size={32} color="foreground" weight="regular" />
               }
               title={
-                isNepali
-                  ? `कालसर्प योग · ${report.doshas.hasKalsarpa ? "छ" : "छैन"}`
-                  : `Kalsarpa Yoga · ${report.doshas.hasKalsarpa ? "Present" : "Not present"}`
+                `Kalsarpa Yoga · ${report.doshas.hasKalsarpa ? "Present" : "Not present"}`
               }
               description={
-                isNepali
-                  ? report.doshas.kalsarpaDetailsNe
-                  : `Rahu and Ketu always sit opposite each other. If all planets fall inside the arc between them, Kalsarpa Yoga is said to be present. It is ${report.doshas.hasKalsarpa ? "present" : "not present"} in this chart.`
+                `Rahu and Ketu always sit opposite each other. If all planets fall inside the arc between them, Kalsarpa Yoga is said to be present. It is ${report.doshas.hasKalsarpa ? "present" : "not present"} in this chart.`
               }
             />
           </div>
@@ -259,15 +200,7 @@ export default function FullChartDetails({
   );
 }
 
-function formatBirthDate(
-  gregorianValue: string,
-  nepaliDate: { year: number; month: number; day: number },
-  isNepali: boolean,
-) {
-  if (isNepali) {
-    return `${nepaliDate.day} ${NEPALI_MONTHS_NE[nepaliDate.month - 1]} ${nepaliDate.year}`;
-  }
-
+function formatBirthDate(gregorianValue: string) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "long",
@@ -276,21 +209,11 @@ function formatBirthDate(
   }).format(new Date(gregorianValue));
 }
 
-function formatBirthLocation(
-  latitude: number,
-  longitude: number,
-  isNepali: boolean,
-) {
+function formatBirthLocation(latitude: number, longitude: number) {
   const city = MAJOR_NEPALI_CITIES.find(
     (candidate) => candidate.lat === latitude && candidate.lon === longitude,
   );
-  const cityName = city
-    ? isNepali
-      ? city.nameNe
-      : city.name
-    : isNepali
-      ? "स्थान"
-      : "Location";
+  const cityName = city ? city.name : "Location";
 
   return `${cityName} (${latitude}, ${longitude})`;
 }
@@ -376,15 +299,7 @@ function getDashaStatus(period: DashaPeriod, today: Date): DashaStatus {
   return "active";
 }
 
-function getDashaStatusLabel(status: DashaStatus, isNepali: boolean) {
-  if (isNepali) {
-    return status === "active"
-      ? "हाल"
-      : status === "upcoming"
-        ? "आगामी"
-        : "समाप्त";
-  }
-
+function getDashaStatusLabel(status: DashaStatus) {
   return status[0].toUpperCase() + status.slice(1);
 }
 

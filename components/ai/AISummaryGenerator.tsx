@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
@@ -10,26 +9,18 @@ import type { CompleteBirthChartReport } from "@/lib/jyotish-engine";
 
 interface AISummaryGeneratorProps {
   reportData: CompleteBirthChartReport;
-  language?: Language;
 }
 
 export default function AISummaryGenerator({
   reportData,
-  language = "en",
 }: AISummaryGeneratorProps) {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isNepali = language === "np";
-
   const generateSummary = async () => {
     if (!reportData) {
-      setError(
-        isNepali
-          ? "कुण्डलीको विवरण भेटिएन।"
-          : "Kundali report data is missing.",
-      );
+      setError("Kundali report data is missing.");
       return;
     }
 
@@ -40,16 +31,12 @@ export default function AISummaryGenerator({
       const res = await fetch("/api/summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chartData: reportData, language }),
+        body: JSON.stringify({ chartData: reportData }),
       });
 
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error(
-          isNepali
-            ? "सर्भरमा समस्या आयो। कृपया पुनः प्रयास गर्नुहोस्।"
-            : `Server error (${res.status}). Check server logs.`,
-        );
+        throw new Error(`Server error (${res.status}). Check server logs.`);
       }
 
       const data = await res.json();
@@ -77,12 +64,10 @@ export default function AISummaryGenerator({
           <CardContent className="p-6 py-6 justify-center items-center w-fill md:w-full">
             <div className="text-center">
               <h3 className="text-2xl font-semibold w-full text-left text-foreground mb-2">
-                {isNepali ? "रिपोर्ट सारांश" : "Report Summary"}
+                Report Summary
               </h3>
               <p className="text-muted-foreground text-left  text-base mb-6">
-                {isNepali
-                  ? "तपाईंको जन्म कुण्डलीको आधारमा AI द्वारा तयार पारिएको विस्तृत सारांश प्राप्त गर्नुहोस्।"
-                  : "Generate detailed summary of your birth chart"}
+                Generate detailed summary of your birth chart
               </p>
 
               <Button
@@ -95,16 +80,10 @@ export default function AISummaryGenerator({
                 {loading ? (
                   <>
                     <span className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent mr-2" />
-                    {isNepali ? "तयार हुँदैछ..." : "Generating..."}
+                    Generating...
                   </>
                 ) : summary ? (
-                  isNepali ? (
-                    "पुनः तयार गर्नुहोस्"
-                  ) : (
-                    "Regenerate Summary"
-                  )
-                ) : isNepali ? (
-                  "AI सारांश प्राप्त गर्नुहोस्"
+                  "Regenerate Summary"
                 ) : (
                   "Generate Report"
                 )}

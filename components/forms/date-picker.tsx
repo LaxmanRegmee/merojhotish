@@ -3,10 +3,9 @@
 import * as React from "react";
 import { CalendarDots, CaretLeft, CaretRight } from "@phosphor-icons/react";
 
-import { NEPALI_MONTHS, NEPALI_MONTHS_NE } from "@/lib/bs-converter";
+import { NEPALI_MONTHS } from "@/lib/bs-converter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import {
   Popover,
   PopoverContent,
@@ -25,7 +24,6 @@ interface NepaliDatePickerProps {
   month: number;
   day: number;
   maxDay?: number;
-  language: Language;
   onChange: (date: { year: number; month: number; day: number }) => void;
 }
 
@@ -34,12 +32,10 @@ export function NepaliDatePicker({
   month,
   day,
   maxDay = 30,
-  language,
   onChange,
 }: NepaliDatePickerProps) {
   const [open, setOpen] = React.useState(false);
-  const isNepali = language === "np";
-  const monthNames = isNepali ? NEPALI_MONTHS_NE : NEPALI_MONTHS;
+  const monthNames = NEPALI_MONTHS;
 
   function updateDate(partial: Partial<NepaliDatePickerProps>) {
     onChange({ year, month, day, ...partial });
@@ -70,11 +66,7 @@ export function NepaliDatePicker({
           )}
         >
           <span className="truncate">
-            {year && day
-              ? `${year} ${monthNames[month - 1]} ${day}`
-              : isNepali
-                ? "मिति छान्नुहोस्"
-                : "Select a date"}
+            {year && day ? `${year} ${monthNames[month - 1]} ${day}` : "Select a date"}
           </span>
           <CalendarDots className="size-4 text-muted-foreground" />
         </Button>
@@ -86,7 +78,7 @@ export function NepaliDatePicker({
         <div className="mb-2 flex h-8 items-center justify-between">
           <button
             type="button"
-            aria-label={isNepali ? "अघिल्लो महिना" : "Previous month"}
+            aria-label="Previous month"
             onClick={() => changeMonth(-1)}
             className="ui-picker-option flex size-7 items-center justify-center rounded-md"
           >
@@ -101,7 +93,7 @@ export function NepaliDatePicker({
               }
             >
               <SelectTrigger
-                aria-label={isNepali ? "वि.सं. महिना" : "B.S. month"}
+                aria-label="B.S. month"
                 className="h-7 w-auto gap-0 border-0 bg-transparent px-1 text-sm shadow-none"
               >
                 <SelectValue />
@@ -121,7 +113,7 @@ export function NepaliDatePicker({
               }
             >
               <SelectTrigger
-                aria-label={isNepali ? "वि.सं. वर्ष" : "B.S. year"}
+                aria-label="B.S. year"
                 className="h-7 w-14.5 border-0 bg-transparent px-1 text-sm shadow-none"
               >
                 <SelectValue />
@@ -140,7 +132,7 @@ export function NepaliDatePicker({
 
           <button
             type="button"
-            aria-label={isNepali ? "अर्को महिना" : "Next month"}
+            aria-label="Next month"
             onClick={() => changeMonth(1)}
             className="ui-picker-option flex size-7 items-center justify-center rounded-md"
           >
@@ -149,10 +141,7 @@ export function NepaliDatePicker({
         </div>
 
         <div className="grid grid-cols-7 text-center text-xs text-muted-foreground">
-          {(isNepali
-            ? ["आइत", "सोम", "मंगल", "बुध", "बिहि", "शुक्र", "शनि"]
-            : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
-          ).map((weekday) => (
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((weekday) => (
             <span key={weekday} className="h-7 leading-7">
               {weekday}
             </span>
@@ -162,7 +151,7 @@ export function NepaliDatePicker({
         <div
           className="grid grid-cols-7"
           role="grid"
-          aria-label={isNepali ? "वि.सं. दिन" : "B.S. day"}
+          aria-label="B.S. day"
         >
           {Array.from({ length: maxDay }, (_, index) => index + 1).map(
             (dayNumber) => (

@@ -1,11 +1,9 @@
 "use client";
 
 import type { AvakahadaChakra as AvakahadaChakraData } from "@/lib/jyotish-engine";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 
 interface AvakahadaChakraProps {
   data: AvakahadaChakraData;
-  language: Language;
 }
 
 const NODE_POSITIONS = [
@@ -36,22 +34,17 @@ const RASHI_SYMBOLS: Record<string, string> = {
 
 export default function AvakahadaChakra({
   data,
-  language,
 }: AvakahadaChakraProps) {
-  const isNepali = language === "np";
   const rashiSymbol = RASHI_SYMBOLS[data.rashi] ?? data.rashi.slice(0, 1);
   const nodes = [
-    [isNepali ? "वर्ण" : "Varna", isNepali ? data.varnaNe : data.varna],
-    [isNepali ? "राशि" : "Rashi", isNepali ? data.rashiNe : data.rashi],
-    [
-      isNepali ? "नक्षत्र" : "Nakshatra",
-      isNepali ? data.nakshatraNe : data.nakshatra,
-    ],
-    [isNepali ? "गण" : "Gana", isNepali ? data.ganaNe : data.gana],
-    [isNepali ? "योनि" : "Yoni", isNepali ? data.yoniNe : data.yoni],
-    [isNepali ? "नाडी" : "Nadi", isNepali ? data.nadiNe : data.nadi],
-    [isNepali ? "पाया" : "Paya", isNepali ? data.payaNe : data.paya],
-    [isNepali ? "पद" : "Pada", String(data.pada)],
+    ["Varna", data.varna],
+    ["Rashi", data.rashi],
+    ["Nakshatra", data.nakshatra],
+    ["Gana", data.gana],
+    ["Yoni", data.yoni],
+    ["Nadi", data.nadi],
+    ["Paya", data.paya],
+    ["Pada", String(data.pada)],
   ];
 
   return (

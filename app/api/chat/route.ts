@@ -18,7 +18,7 @@ function getProviderErrorMessage(payload: string, status: number) {
 }
 
 export async function POST(req: Request) {
-  const { messages, reportData, language = "en" } = await req.json();
+  const { messages, reportData } = await req.json();
 
   const response = await fetch(
     "https://integrate.api.nvidia.com/v1/chat/completions",
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "system",
-            content: buildAstrologyChatPrompt(reportData, language),
+            content: buildAstrologyChatPrompt(reportData),
           },
           ...messages,
         ],

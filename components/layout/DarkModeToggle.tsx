@@ -1,18 +1,24 @@
 "use client";
 
-type DarkModeToggleProps = {
-  darkMode: boolean;
-  onDarkModeChange: (darkMode: boolean) => void;
-};
+import { useEffect, useState } from "react";
 
-export default function DarkModeToggle({
-  darkMode,
-  onDarkModeChange,
-}: DarkModeToggleProps) {
+export default function DarkModeToggle() {
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("darkMode") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("darkMode", String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   function toggleDarkMode() {
-    const next = !darkMode;
-    localStorage.setItem("darkMode", String(next));
-    onDarkModeChange(next);
+    setDarkMode((prev) => !prev);
   }
 
   return (

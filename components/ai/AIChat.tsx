@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +22,6 @@ interface Message {
 
 interface AIChatProps {
   reportData: CompleteBirthChartReport;
-  language?: Language;
 }
 
 // Generate unique ID without using Date.now in render
@@ -32,7 +30,7 @@ function generateId(): string {
   return `${Date.now()}-${++idCounter}`;
 }
 
-export default function AIChat({ reportData, language = "en" }: AIChatProps) {
+export default function AIChat({ reportData }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,20 +43,14 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
   const submittingRef = useRef(false);
   const userHasScrolledRef = useRef(false);
 
-  const isNepali = language === "np";
-
   // Default suggestions from Figma design
   const defaultSuggestions = useMemo(
     () => [
-      isNepali
-        ? "तपाईंको करियर कस्तो छ?"
-        : "What is my career like?",
-      isNepali
-        ? "मलाई 5 वर्षभित्र विवाह हुन्छ कि?"
-        : "am i gonna be married in next 5 years?",
-      isNepali ? "मंगल दोष के हो?" : "what does mangal dosha mean?",
+      "What is my career like?",
+      "am i gonna be married in next 5 years?",
+      "what does mangal dosha mean?",
     ],
-    [isNepali],
+    [],
   );
 
   // Auto-scroll to bottom when new messages arrive, but only if user hasn't scrolled up
@@ -122,7 +114,6 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
             content: m.content,
           })),
           reportData,
-          language,
         }),
       });
 
@@ -227,7 +218,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
         {/* Chat Header */}
         <div className=" shrink-0">
           <h2 className="text-2xl px-6 pb-6 font-medium leading-8 text-foreground tracking-normal">
-            {isNepali ? "च्याट" : "Chat"}
+            Chat
           </h2>
         </div>
 
@@ -238,7 +229,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
           className="scroll-fade no-scrollbar flex-1 overflow-y-auto h-full gap-6 py-5 px-5 flex flex-col"
           role="log"
           aria-live="polite"
-          aria-label={isNepali ? "च्याट सन्देशहरू" : "Chat messages"}
+          aria-label="Chat messages"
         >
           {showSuggestions && messages.length === 0 && (
             // Initial state with suggestion bubbles - pushed to bottom
@@ -360,14 +351,10 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={isNepali ? "प्रश्न गर्नुहोस्..." : "Ask chat..."}
-                  className="w-full border-0! bg-transparent! text-sm! leading-5 text-foreground placeholder:text-muted-foreground font-['Noto_Sans_Devanagari']"
+                  placeholder="Ask chat..."
+                  className="w-full border-0! bg-transparent! text-sm! leading-5 text-foreground placeholder:text-muted-foreground"
                   disabled={loading}
-                  aria-label={
-                    isNepali
-                      ? "प्रश्न प्रविष्ट गर्नुहोस्"
-                      : "Enter your question"
-                  }
+                  aria-label="Enter your question"
                 />
               </div>
               <Button
@@ -376,7 +363,7 @@ export default function AIChat({ reportData, language = "en" }: AIChatProps) {
                 size="icon"
                 variant="default"
                 className="rounded-full shrink-0 transition-opacity disabled:opacity-50"
-                aria-label={isNepali ? "पठाउनुहोस्" : "Send message"}
+                aria-label="Send message"
               >
                 <ArrowUpIcon
                   size={16}

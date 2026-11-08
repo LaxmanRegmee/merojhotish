@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { Language } from "@/components/layout/LanguageSwitcher";
 import { Hamburger, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 interface KundaliReportLayoutProps {
   children: ReactNode;
-  language: Language;
 }
 
 const sections = [
@@ -23,7 +21,6 @@ const sections = [
 
 export default function KundaliReportLayout({
   children,
-  language,
 }: KundaliReportLayoutProps) {
   const [activeSection, setActiveSection] = useState("charts");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,7 +79,6 @@ export default function KundaliReportLayout({
     setActiveSection(id);
   }
 
-  const isNepali = language === "np";
   const activeSectionIndex = Math.max(
     sections.findIndex((section) => section.id === activeSection),
     0,
@@ -127,7 +123,7 @@ export default function KundaliReportLayout({
         )}
         <nav
           className="relative"
-          aria-label={isNepali ? "रिपोर्टका भागहरू" : "Report sections"}
+          aria-label="Report sections"
         >
           <span
             aria-hidden="true"
