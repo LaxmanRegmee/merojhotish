@@ -107,6 +107,12 @@ export interface CompleteBirthChartReport {
   doshas: DoshaAnalysis;
   d1Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 -> Planet names
   d9Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Navamsha
+  d2Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Hora
+  d3Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Drekkana
+  d7Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Saptamsa
+  d10Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Dashamsa
+  d12Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Dwadasamsa
+  d30Chart: Record<number, { name: string; nameNe: string }[]>; // House 1..12 in Trimsamsa
 }
 
 // --- LOOKUP TABLES & ASTROLOGICAL CONSTANTS ---
@@ -542,6 +548,120 @@ function calculateD9Sign(longitude: number): number {
   return totalNavamshaIndex % 12;
 }
 
+// --- Divisional Chart Calculation Functions ---
+
+// D2 Hora: Each sign (30°) divided into 2 parts of 15° each.
+// Odd signs: first half = Sun, second half = Moon
+// Even signs: first half = Moon, second half = Sun
+function calculateD2Sign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const half = Math.floor((longitude % 30) / 15); // 0 or 1
+  const signIsOdd = signIndex % 2 === 0; // Aries(0) = odd sign in Vedic counting
+  // In Vedic, odd signs (1,3,5...) start with Sun, even signs start with Moon
+  // signIndex 0 = Aries = odd (1st sign) = starts with Sun
+  if (signIsOdd) {
+    return half === 0 ? 0 : 4; // Sun=0(Aries), Moon=4(Cancer) - simplified: use sign ruler logic
+  } else {
+    return half === 0 ? 4 : 0; // Moon first for even signs
+  }
+}
+
+// Actually, Hora uses Sun and Moon rulership:
+// Odd signs: 0-15° = Sun (sign Aries/Leo ruler), 15-30° = Moon (sign Cancer)
+// Even signs: 0-15° = Moon, 15-30° = Sun
+// We map to sign index: Sun rules Leo(4) in some systems but for Hora we use Aries(0) for Sun part
+// Standard approach: Hora sign = sign itself for odd, opposite for even
+// Simplified: return the sign index modified by hora
+function calculateHoraSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const degreeInSign = longitude % 30;
+  const half = Math.floor(degreeInSign / 15);
+  // Odd signs (Aries=0): first half = own sign, second half = sign+4 (Leo/Moon sign equivalent)
+  // Even signs: first half = sign+4, second half = own sign
+  if (signIndex % 2 === 0) {
+    // Odd sign (1st, 3rd, etc.)
+    return half === 0 ? signIndex : (signIndex + 4) % 12;
+  } else {
+    // Even sign
+    return half === 0 ? (signIndex + 4) % 12 : signIndex;
+  }
+}
+
+// D3 Drekkana: Each sign divided into 3 parts of 10° each.
+// Each part is ruled by: sign itself, 5th sign from it, 9th sign from it
+function calculateDrekkanaSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const part = Math.floor((longitude % 30) / 10); // 0, 1, or 2
+  return (signIndex + part * 5) % 12;
+}
+
+// D7 Saptamsa: Each sign divided into 7 parts of 4°17'8.57" (30/7 degrees)
+// Odd signs: start from sign itself, Even signs: start from 7th sign from it
+function calculateSaptamsaSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const degreeInSign = longitude % 30;
+  const part = Math.floor((degreeInSign / 30) * 7); // 0..6
+  if (signIndex % 2 === 0) {
+    // Odd sign: start from sign itself
+    return (signIndex + part) % 12;
+  } else {
+    // Even sign: start from 7th sign
+    return (signIndex + 6 + part) % 12;
+  }
+}
+
+// D10 Dashamsa: Each sign divided into 10 parts of 3° each.
+// Cardinal signs (Aries, Cancer, Libra, Capricorn): start from Aries(0)
+// Fixed signs (Taurus, Leo, Scorpio, Aquarius): start from sign itself
+// Mutable signs (Gemini, Virgo, Sagittarius, Pisces): start from 9th sign
+function calculateDashamsaSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const degreeInSign = longitude % 30;
+  const part = Math.floor((degreeInSign / 30) * 10); // 0..9
+  const signMod = signIndex % 3; // 0=cardinal, 1=fixed, 2=mutable
+  let startSign: number;
+  if (signMod === 0) {
+    startSign = 0; // Aries
+  } else if (signMod === 1) {
+    startSign = signIndex; // sign itself
+  } else {
+    startSign = (signIndex + 8) % 12; // 9th sign
+  }
+  return (startSign + part) % 12;
+}
+
+// D12 Dwadasamsa: Each sign divided into 12 parts of 2.5° each.
+// Start from sign itself
+function calculateDwadasamsaSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const degreeInSign = longitude % 30;
+  const part = Math.floor((degreeInSign / 30) * 12); // 0..11
+  return (signIndex + part) % 12;
+}
+
+// D30 Trimsamsa: Each sign divided into 5 unequal parts.
+// Odd signs: 5°(Saturn), 5°(Mars), 7°(Jupiter), 8°(Mercury), 7°(Venus)
+// Even signs: reversed order: 5°(Venus), 7°(Mercury), 7°(Jupiter), 5°(Mars), 5°(Saturn)
+// Sign rulers mapping: Saturn=7, Mars=6, Jupiter=4, Mercury=5, Venus=1 (sign indices)
+// Trimsamsa boundaries in degrees: [0-5, 5-10, 10-17, 17-25, 25-30]
+const TRIMSSAMSA_ODD = [7, 6, 4, 5, 1]; // Saturn, Mars, Jupiter, Mercury, Venus
+const TRIMSSAMSA_EVEN = [1, 5, 4, 6, 7]; // Venus, Mercury, Jupiter, Mars, Saturn
+const TRIMSSAMSA_BOUNDS = [5, 10, 17, 25, 30];
+
+function calculateTrimsamsaSign(longitude: number): number {
+  const signIndex = Math.floor(longitude / 30);
+  const degreeInSign = longitude % 30;
+  let part = 4;
+  for (let i = 0; i < TRIMSSAMSA_BOUNDS.length; i++) {
+    if (degreeInSign < TRIMSSAMSA_BOUNDS[i]) {
+      part = i;
+      break;
+    }
+  }
+  const rulers = signIndex % 2 === 0 ? TRIMSSAMSA_ODD : TRIMSSAMSA_EVEN;
+  return rulers[part];
+}
+
 // --- MAIN GENERATOR FUNCTION ---
 
 export async function generateFullBirthChart(
@@ -667,18 +787,68 @@ export async function generateFullBirthChart(
       }
     });
 
-    // 3. Build D1 and D9 Chart House Arrays
+    // 3. Build D1 through D30 Chart House Arrays
     const d1Chart: Record<number, { name: string; nameNe: string }[]> = {};
     const d9Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d2Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d3Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d7Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d10Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d12Chart: Record<number, { name: string; nameNe: string }[]> = {};
+    const d30Chart: Record<number, { name: string; nameNe: string }[]> = {};
     for (let h = 1; h <= 12; h++) {
       d1Chart[h] = [];
       d9Chart[h] = [];
+      d2Chart[h] = [];
+      d3Chart[h] = [];
+      d7Chart[h] = [];
+      d10Chart[h] = [];
+      d12Chart[h] = [];
+      d30Chart[h] = [];
     }
+
+    // Calculate lagna's position in each divisional chart for house reference
+    const lagnaD2Sign = calculateHoraSign(lagnaSidereal);
+    const lagnaD3Sign = calculateDrekkanaSign(lagnaSidereal);
+    const lagnaD7Sign = calculateSaptamsaSign(lagnaSidereal);
+    const lagnaD10Sign = calculateDashamsaSign(lagnaSidereal);
+    const lagnaD12Sign = calculateDwadasamsaSign(lagnaSidereal);
+    const lagnaD30Sign = calculateTrimsamsaSign(lagnaSidereal);
 
     planets.forEach((p) => {
       d1Chart[p.house].push({ name: p.name, nameNe: p.nameNe });
       const d9House = ((p.d9SignIndex - lagnaD9SignIndex + 12) % 12) + 1;
       d9Chart[d9House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D2 Hora
+      const d2Sign = calculateHoraSign(p.longitude);
+      const d2House = ((d2Sign - lagnaD2Sign + 12) % 12) + 1;
+      d2Chart[d2House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D3 Drekkana
+      const d3Sign = calculateDrekkanaSign(p.longitude);
+      const d3House = ((d3Sign - lagnaD3Sign + 12) % 12) + 1;
+      d3Chart[d3House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D7 Saptamsa
+      const d7Sign = calculateSaptamsaSign(p.longitude);
+      const d7House = ((d7Sign - lagnaD7Sign + 12) % 12) + 1;
+      d7Chart[d7House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D10 Dashamsa
+      const d10Sign = calculateDashamsaSign(p.longitude);
+      const d10House = ((d10Sign - lagnaD10Sign + 12) % 12) + 1;
+      d10Chart[d10House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D12 Dwadasamsa
+      const d12Sign = calculateDwadasamsaSign(p.longitude);
+      const d12House = ((d12Sign - lagnaD12Sign + 12) % 12) + 1;
+      d12Chart[d12House].push({ name: p.name, nameNe: p.nameNe });
+
+      // D30 Trimsamsa
+      const d30Sign = calculateTrimsamsaSign(p.longitude);
+      const d30House = ((d30Sign - lagnaD30Sign + 12) % 12) + 1;
+      d30Chart[d30House].push({ name: p.name, nameNe: p.nameNe });
     });
 
     // 4. Avakahada Chakra (from Moon position)
@@ -874,6 +1044,12 @@ export async function generateFullBirthChart(
       },
       d1Chart,
       d9Chart,
+      d2Chart,
+      d3Chart,
+      d7Chart,
+      d10Chart,
+      d12Chart,
+      d30Chart,
     };
   } finally {
     swe.close();
