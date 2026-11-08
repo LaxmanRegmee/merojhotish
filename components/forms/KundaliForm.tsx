@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Language } from "@/components/layout/LanguageSwitcher";
-import { Clock } from "lucide-react";
 
 interface FormProps {
   onSubmit: (formData: FormData) => void;
