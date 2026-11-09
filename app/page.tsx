@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { CakeIcon, Check, Download } from "@phosphor-icons/react";
 import { generateKundaliAction } from "@/app/action";
@@ -194,12 +195,14 @@ function Home() {
       lang="en"
     >
       <header className="relative flex h-21.25 items-center justify-between border-b border-b-border px-6 md:px-21">
-        <Image
-          src={logo}
-          alt="MeroJyotish"
-          priority
-          className="h-auto w-24 md:w-32"
-        />
+        <Link href="/">
+          <Image
+            src={logo}
+            alt="MeroJyotish"
+            priority
+            className="h-auto w-24 md:w-32"
+          />
+        </Link>
         <HeaderNavigation />
         <DarkModeToggle />
       </header>
@@ -208,7 +211,7 @@ function Home() {
         <section className="min-h-140.5">
           <div
             id="birth-details"
-            className="mx-auto min-h-140.5 w-full max-w-318 border-x border-border"
+            className="mx-auto min-h-140.5 w-full max-w-318 border-x border-border pt-6"
           >
             <SavedChartsList
               onLoadChart={handleLoadSavedChart}
